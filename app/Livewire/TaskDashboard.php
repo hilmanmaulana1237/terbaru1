@@ -24,12 +24,6 @@ class TaskDashboard extends Component
     public $pendingTaskId = null;
     public $lastTaskDate = null;
     public $daysSinceLastTask = null;
-    
-    // Weekly warning modal properties
-    public $showWeeklyWarningModal = false;
-    public $pendingTaskId = null;
-    public $lastTaskDate = null;
-    public $daysSinceLastTask = null
 
     public function mount()
     {
