@@ -1,0 +1,6 @@
+title,description,whatsapp_group_link,difficulty_level,estimated_amount,expired_at,priority_order
+VCF Contact Import Task 1,Upload data VCF ke grup WhatsApp yang sudah disediakan. Pastikan format sudah benar.,https://chat.whatsapp.com/ABC123example,easy,50000,2024-12-31 23:59:59,1
+Data Entry Task 2,Masukkan data pelanggan ke spreadsheet dengan format yang sudah ditentukan.,https://chat.whatsapp.com/DEF456example,medium,75000,2024-12-31 23:59:59,2
+Survey Completion Task,Selesaikan survey online dan screenshot bukti penyelesaian.,https://chat.whatsapp.com/GHI789example,easy,25000,2024-12-31 23:59:59,3
+Promotional Share Task,Share promosi ke 5 grup WhatsApp berbeda dan screenshot buktinya.,https://chat.whatsapp.com/JKL012example,easy,35000,2024-12-31 23:59:59,4
+Content Review Task,Review dan berikan feedback untuk 10 artikel yang disediakan.,https://chat.whatsapp.com/MNO345example,hard,100000,2024-12-31 23:59:59,5
