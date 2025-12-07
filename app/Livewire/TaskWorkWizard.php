@@ -39,25 +39,13 @@ class TaskWorkWizard extends Component
     public $completionNotes = '';
 
     protected $rules = [
-        'proof1Files.*' => 'required|file|max:10240', // 10MB max
-        'proof1Description' => 'required|min:10',
-        'proof2Files.*' => 'nullable|file|max:10240',
-        'proof2Description' => 'nullable|min:10',
         'completionNotes' => 'nullable|string',
         'understoodInstructions' => 'required|accepted',
     ];
 
     protected $messages = [
-        'understoodInstructions.required' => 'You must confirm that you understand the instructions.',
-        'understoodInstructions.accepted' => 'You must confirm that you understand the instructions.',
-        'proof1Files.*.required' => 'Please upload at least one proof file.',
-        'proof1Files.*.file' => 'The uploaded file must be a valid file.',
-        'proof1Files.*.max' => 'Each file must not exceed 10MB.',
-        'proof1Description.required' => 'Please provide a description of your work.',
-        'proof1Description.min' => 'Description must be at least 10 characters.',
-        'proof2Files.*.file' => 'The uploaded file must be a valid file.',
-        'proof2Files.*.max' => 'Each file must not exceed 10MB.',
-        'proof2Description.min' => 'Description must be at least 10 characters.',
+        'understoodInstructions.required' => 'Haraf menyetujui instruksi tasks terlebih dahulu.',
+        'understoodInstructions.accepted' => 'Haraf menyetujui instruksi tasks terlebih dahulu.',
     ];
 
     public function mount(Task $task)
@@ -282,27 +270,52 @@ class TaskWorkWizard extends Component
             case 1:
                 $this->validate([
                     'understoodInstructions' => 'required|accepted'
-                ], [
-                    'understoodInstructions.required' => 'You must confirm that you understand the instructions.',
-                    'understoodInstructions.accepted' => 'You must confirm that you understand the instructions.',
-                ]);
+                ], $this->messages);
                 break;
             case 2:
                 if ($this->canSubmitProof1()) {
-                    $this->validate([
-                        'proof1Files.*' => 'required|file|max:10240',
-                        'proof1Description' => 'required|min:10'
-                    ]);
+                    $this->validateProof(1);
                 }
                 break;
             case 3:
                 if ($this->canSubmitProof2()) {
-                    $this->validate([
-                        'proof2Files.*' => 'required|file|max:10240',
-                        'proof2Description' => 'required|min:10'
-                    ]);
+                    $this->validateProof(2);
                 }
                 break;
+        }
+    }
+
+    private function validateProof($stage)
+    {
+        $files = $stage === 1 ? $this->proof1Files : $this->proof2Files;
+        $description = $stage === 1 ? $this->proof1Description : $this->proof2Description;
+        $fileKey = $stage === 1 ? 'proof1Files' : 'proof2Files';
+        $descKey = $stage === 1 ? 'proof1Description' : 'proof2Description';
+
+        if (empty($files) && empty($description)) {
+            $this->addError($fileKey, 'Harap upload bukti file ATAU isi deskripsi/link.');
+            $this->addError($descKey, 'Harap upload bukti file ATAU isi deskripsi/link.');
+            // Throw validation exception
+            $this->validate([
+                $fileKey => 'required_without:' . $descKey,
+                $descKey => 'required_without:' . $fileKey,
+            ]);
+        }
+
+        if (!empty($files)) {
+            $this->validate([
+                $fileKey . '.*' => 'file|max:10240', // 10MB
+            ], [
+                $fileKey . '.*.max' => 'Maksimal ukuran file adalah 10MB.',
+            ]);
+        }
+
+        if (!empty($description)) {
+            $this->validate([
+                $descKey => 'min:5',
+            ], [
+                $descKey . '.min' => 'Deskripsi minimal 5 karakter.',
+            ]);
         }
     }
 
@@ -313,10 +326,7 @@ class TaskWorkWizard extends Component
             return;
         }
 
-        $this->validate([
-            'proof1Files.*' => 'required|file|max:10240',
-            'proof1Description' => 'required|min:10'
-        ]);
+        $this->validateProof(1);
 
         try {
             // Upload files
@@ -359,10 +369,7 @@ class TaskWorkWizard extends Component
             return;
         }
 
-        $this->validate([
-            'proof2Files.*' => 'required|file|max:10240',
-            'proof2Description' => 'required|min:10'
-        ]);
+        $this->validateProof(2);
 
         try {
             // Upload files

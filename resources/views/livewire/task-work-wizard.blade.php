@@ -282,63 +282,129 @@
                     </div>
                   </div>
                 @endif
-                <form wire:submit="{{ $isStep2 ? 'submitProof1' : 'submitProof2' }}" class="space-y-5">
-                  <div class="space-y-2">
-                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300">Evidence Files</label>
-                    <div x-data="{ isUploading: false, progress: 0 }" 
-                         x-on:livewire-upload-start="isUploading = true"
-                         x-on:livewire-upload-finish="isUploading = false"
-                         x-on:livewire-upload-error="isUploading = false"
-                         x-on:livewire-upload-progress="progress = $event.detail.progress"
-                         class="relative">
-                      <input type="file" wire:model="{{ $isStep2 ? 'proof1Files' : 'proof2Files' }}" multiple accept="image/*,application/pdf,.doc,.docx" class="block w-full text-sm text-gray-500 file:mr-4 file:py-3 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100 dark:file:bg-zinc-700 dark:file:text-zinc-300 dark:hover:file:bg-zinc-600 transition-colors"/>
-                      <div x-show="isUploading" class="absolute inset-0 w-full h-full bg-white/70 dark:bg-zinc-800/70 backdrop-blur-sm rounded-lg">
-                        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full px-4">
-                          <div class="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
-                            <div class="bg-green-600 h-2.5 rounded-full" :style="`width: ${progress}%`"></div>
+                <form wire:submit="{{ $isStep2 ? 'submitProof1' : 'submitProof2' }}" class="space-y-8">
+                  
+                  <!-- Option 1: File Upload -->
+                  <div class="bg-gray-50 dark:bg-zinc-800/50 rounded-xl p-5 border border-dashed border-gray-300 dark:border-zinc-700 hover:border-green-500 dark:hover:border-green-500 transition-colors">
+                    <div class="flex flex-col items-center justify-center text-center">
+                      <div class="mb-4 p-3 bg-green-100 dark:bg-green-900/30 rounded-full">
+                        <svg class="w-8 h-8 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                        </svg>
+                      </div>
+                      <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-1">Upload Bukti File / Zip</h3>
+                      <p class="text-sm text-gray-500 dark:text-gray-400 mb-4 max-w-sm">
+                        Upload screenshot, dokumen, atau folder (dalam bentuk .zip). <br>
+                        <span class="text-xs text-green-600 dark:text-green-400 font-medium">*Jika upload file, deskripsi opsional.</span>
+                      </p>
+                      
+                      <div x-data="{ isUploading: false, progress: 0 }" 
+                           x-on:livewire-upload-start="isUploading = true"
+                           x-on:livewire-upload-finish="isUploading = false"
+                           x-on:livewire-upload-error="isUploading = false"
+                           x-on:livewire-upload-progress="progress = $event.detail.progress"
+                           class="w-full max-w-md relative">
+                        
+                        <label class="w-full flex flex-col items-center px-4 py-6 bg-white dark:bg-zinc-800 text-green-600 rounded-lg shadow-sm tracking-wide uppercase border border-green-500 cursor-pointer hover:bg-green-50 dark:hover:bg-zinc-700 transition-colors">
+                            <span class="text-base leading-normal font-semibold">Pilih File</span>
+                            <input type="file" wire:model="{{ $isStep2 ? 'proof1Files' : 'proof2Files' }}" multiple accept="image/*,application/pdf,.doc,.docx,.zip,.rar" class="hidden" />
+                        </label>
+                        
+                        <!-- Upload Progress -->
+                        <div x-show="isUploading" x-transition class="mt-4">
+                          <div class="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700 overflow-hidden">
+                            <div class="bg-green-600 h-2.5 rounded-full transition-all duration-300" :style="`width: ${progress}%`"></div>
                           </div>
-                          <p class="text-center text-sm text-gray-600 dark:text-gray-400 mt-2" x-text="`Uploading... ${progress}%`"></p>
+                          <p class="text-center text-xs text-gray-600 dark:text-gray-400 mt-2" x-text="`Uploading... ${progress}%`"></p>
+                        </div>
+                        
+                         <!-- File Preview List -->
+                        <div class="mt-4 text-left space-y-2">
+                           @if($isStep2 ? $proof1Files : $proof2Files)
+                              @foreach($isStep2 ? $proof1Files : $proof2Files as $file)
+                                <div class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300 bg-white dark:bg-zinc-900 p-2 rounded border border-gray-200 dark:border-zinc-700">
+                                    <svg class="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd" /></svg>
+                                    <span class="truncate">{{ $file->getClientOriginalName() }}</span>
+                                </div>
+                              @endforeach
+                           @endif
                         </div>
                       </div>
+                      @error($isStep2 ? 'proof1Files' : 'proof2Files') <p class="mt-2 text-red-600 dark:text-red-400 text-sm">{{ $message }}</p> @enderror
+                      @error($isStep2 ? 'proof1Files.*' : 'proof2Files.*') <p class="mt-2 text-red-600 dark:text-red-400 text-sm">{{ $message }}</p> @enderror
                     </div>
-                    @error($isStep2 ? 'proof1Files.*' : 'proof2Files.*') <p class="mt-2 text-red-600 dark:text-red-400 text-xs">{{ $message }}</p> @enderror
                   </div>
-                  
-                  <div class="space-y-2">
-                    <label for="description" class="block text-sm font-semibold text-gray-700 dark:text-gray-300">Catatan Anda:</label>
-                    <textarea wire:model="{{ $isStep2 ? 'proof1Description' : 'proof2Description' }}" id="description" rows="4" placeholder="Upload link google drive jika bukti screenshot diatas gagal dikirim..." class="w-full px-4 py-3 border border-gray-300 dark:border-zinc-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-blue-500 dark:bg-zinc-700 dark:text-white transition-all text-sm"></textarea>
-                    @error($isStep2 ? 'proof1Description' : 'proof2Description') <p class="mt-2 text-red-600 dark:text-red-400 text-xs">{{ $message }}</p> @enderror
+
+                  <!-- Separator -->
+                  <div class="relative">
+                    <div class="absolute inset-0 flex items-center">
+                      <div class="w-full border-t border-gray-200 dark:border-zinc-700"></div>
+                    </div>
+                    <div class="relative flex justify-center text-sm">
+                      <span class="px-2 bg-white dark:bg-zinc-800/50 text-gray-500 dark:text-gray-400">ATAU / DAN</span>
+                    </div>
+                  </div>
+
+                  <!-- Option 2: Description / Link -->
+                  <div class="space-y-3">
+                    <label for="description" class="block text-sm font-semibold text-gray-700 dark:text-gray-300">
+                        Catatan / Link Bukti
+                        <span class="text-xs font-normal text-gray-500 ml-1">(Wajib jika tidak upload file)</span>
+                    </label>
+                    <div class="relative">
+                        <textarea 
+                            wire:model="{{ $isStep2 ? 'proof1Description' : 'proof2Description' }}" 
+                            id="description" 
+                            rows="4" 
+                            placeholder="Contoh: https://drive.google.com/... atau 'Saya sudah mengirimkan bukti ke WhatsApp admin'"
+                            class="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-zinc-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent dark:bg-zinc-700 dark:text-white transition-all text-sm shadow-sm"
+                        ></textarea>
+                    </div>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">
+                        Gunakan kolom ini jika Anda mengirim bukti via Link (Google Drive, Dropbox, dll) atau jika file terlalu besar untuk diupload langsung.
+                    </p>
+                    @error($isStep2 ? 'proof1Description' : 'proof2Description') <p class="mt-2 text-red-600 dark:text-red-400 text-sm">{{ $message }}</p> @enderror
                   </div>
                 </form>
               @else
                 <!-- Awaiting Admin Verification -->
-                <div class="text-center py-10">
-                  <div class="w-16 h-16 bg-orange-100 dark:bg-orange-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <svg class="w-8 h-8 text-orange-500 dark:text-orange-400 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                  </div>
-                  <h3 class="text-lg font-bold text-orange-600 dark:text-orange-400 mb-2">Menunggu Verifikasi Admin</h3>
-                  <p class="text-zinc-600 dark:text-zinc-400 text-sm max-w-md mx-auto">Bukti Anda sudah dikirim dan sedang dalam proses review.</p>
-                  <div class="mt-4 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-xl p-3">
-                    <div class="flex items-center justify-center gap-2 text-orange-700 dark:text-orange-300 text-sm">
-                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                      <span class="font-medium">Mohon tunggu sementara admin memeriksa pengiriman Anda</span>
+                <div class="text-center py-8">
+                  <!-- Status Icon -->
+                  <div class="relative mx-auto mb-6 w-20 h-20">
+                    <div class="absolute inset-0 bg-orange-100 dark:bg-orange-900/30 rounded-full animate-ping opacity-75"></div>
+                    <div class="relative w-20 h-20 bg-orange-100 dark:bg-orange-900/30 rounded-full flex items-center justify-center">
+                      <svg class="w-10 h-10 text-orange-500 dark:text-orange-400 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
                     </div>
                   </div>
                   
-                  <!-- Info: Can take other tasks -->
-                  <div class="mt-6 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl p-4">
+                  <!-- Status Text -->
+                  <h3 class="text-xl font-bold text-orange-600 dark:text-orange-400 mb-2">Menunggu Verifikasi Admin</h3>
+                  <p class="text-zinc-600 dark:text-zinc-400 text-sm max-w-md mx-auto mb-5">Bukti Anda sudah dikirim dan sedang dalam proses review oleh admin.</p>
+                  
+                  <!-- Waiting Info -->
+                  <div class="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-xl p-4 mb-6">
+                    <div class="flex items-center justify-center gap-2 text-orange-700 dark:text-orange-300 text-sm">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                      <span class="font-medium">Proses review biasanya memakan waktu 1-24 jam</span>
+                    </div>
+                  </div>
+                  
+                  <!-- Tip: Take other tasks -->
+                  <div class="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border-2 border-green-300 dark:border-green-700 rounded-xl p-5 shadow-lg">
                     <div class="flex items-start gap-3">
-                      <div class="flex-shrink-0">
-                        <svg class="w-5 h-5 text-green-600 dark:text-green-400" fill="currentColor" viewBox="0 0 20 20">
-                          <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
-                        </svg>
+                      <div class="flex-shrink-0 mt-0.5">
+                        <div class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+                          <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd"/>
+                          </svg>
+                        </div>
                       </div>
                       <div class="text-left flex-1">
-                        <h4 class="font-semibold text-green-900 dark:text-green-200 text-sm mb-1">💡 Tip: Sambil Menunggu</h4>
-                        <p class="text-green-800 dark:text-green-300 text-xs">Anda bisa mengambil dan mengerjakan task lain sambil menunggu admin melakukan verifikasi. Maksimalkan waktu Anda!</p>
-                        <a href="{{ route('user.dashboard') }}" class="inline-flex items-center gap-1 mt-2 text-xs font-semibold text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300">
-                          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-                          Kembali ke Dashboard
+                        <h4 class="font-bold text-green-900 dark:text-green-100 text-base mb-2">💡 Maksimalkan Waktu Anda!</h4>
+                        <p class="text-green-800 dark:text-green-200 text-sm mb-4">Sambil menunggu verifikasi, Anda bisa mengambil task lain untuk meningkatkan penghasilan. Waktu Anda berharga!</p>
+                        <a href="{{ route('user.dashboard') }}" class="inline-flex items-center gap-2 px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-semibold transition-all shadow-md hover:shadow-lg">
+                          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path></svg>
+                          Ambil Task Lain
                         </a>
                       </div>
                     </div>
@@ -751,63 +817,135 @@
                     </div>
                   </div>
                 @endif
-                <form wire:submit="{{ $isStep2 ? 'submitProof1' : 'submitProof2' }}" class="space-y-6">
-                  <div class="space-y-2">
-                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300">File Bukti Screenshot</label>
-                    <div x-data="{ isUploading: false, progress: 0 }" 
-                         x-on:livewire-upload-start="isUploading = true"
-                         x-on:livewire-upload-finish="isUploading = false"
-                         x-on:livewire-upload-error="isUploading = false"
-                         x-on:livewire-upload-progress="progress = $event.detail.progress"
-                         class="relative">
-                      <input type="file" wire:model="{{ $isStep2 ? 'proof1Files' : 'proof2Files' }}" multiple accept="image/*,application/pdf,.doc,.docx" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100 dark:file:bg-zinc-700 dark:file:text-zinc-300 dark:hover:file:bg-zinc-600 transition-colors"/>
-                      <div x-show="isUploading" class="absolute inset-0 w-full h-full bg-white/70 dark:bg-zinc-800/70 backdrop-blur-sm">
-                        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full px-4">
-                          <div class="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
-                            <div class="bg-green-600 h-2.5 rounded-full" :style="`width: ${progress}%`"></div>
+                <form wire:submit="{{ $isStep2 ? 'submitProof1' : 'submitProof2' }}" class="space-y-8">
+                  
+                  <!-- Option 1: File Upload -->
+                  <div class="bg-gray-50 dark:bg-zinc-800/50 rounded-xl p-6 border border-dashed border-gray-300 dark:border-zinc-700 hover:border-green-500 dark:hover:border-green-500 transition-colors">
+                    <div class="flex flex-col items-center justify-center text-center">
+                      <div class="mb-4 p-4 bg-green-100 dark:bg-green-900/30 rounded-full">
+                        <svg class="w-10 h-10 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                        </svg>
+                      </div>
+                      <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">Upload Bukti File / Zip</h3>
+                      <p class="text-sm text-gray-500 dark:text-gray-400 mb-6 max-w-sm">
+                        Upload screenshot, dokumen, atau folder (dalam bentuk .zip). <br>
+                        <span class="text-xs text-green-600 dark:text-green-400 font-medium">*Jika upload file, deskripsi opsional.</span>
+                      </p>
+                      
+                      <div x-data="{ isUploading: false, progress: 0 }" 
+                           x-on:livewire-upload-start="isUploading = true"
+                           x-on:livewire-upload-finish="isUploading = false"
+                           x-on:livewire-upload-error="isUploading = false"
+                           x-on:livewire-upload-progress="progress = $event.detail.progress"
+                           class="w-full max-w-md relative">
+                        
+                        <label class="w-full flex flex-col items-center px-4 py-8 bg-white dark:bg-zinc-800 text-green-600 rounded-lg shadow-sm tracking-wide uppercase border border-green-500 cursor-pointer hover:bg-green-50 dark:hover:bg-zinc-700 transition-colors transform hover:-translate-y-1 duration-200">
+                            <span class="text-base leading-normal font-semibold flex items-center gap-2">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                                Pilih File
+                            </span>
+                            <input type="file" wire:model="{{ $isStep2 ? 'proof1Files' : 'proof2Files' }}" multiple accept="image/*,application/pdf,.doc,.docx,.zip,.rar" class="hidden" />
+                        </label>
+                        
+                        <!-- Upload Progress -->
+                        <div x-show="isUploading" x-transition class="mt-4">
+                          <div class="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700 overflow-hidden">
+                            <div class="bg-green-600 h-2.5 rounded-full transition-all duration-300" :style="`width: ${progress}%`"></div>
                           </div>
-                          <p class="text-center text-sm text-gray-600 dark:text-gray-400 mt-2" x-text="`Uploading... ${progress}%`"></p>
+                          <p class="text-center text-xs text-gray-600 dark:text-gray-400 mt-2" x-text="`Uploading... ${progress}%`"></p>
+                        </div>
+                        
+                         <!-- File Preview List -->
+                        <div class="mt-4 text-left space-y-2">
+                           @if($isStep2 ? $proof1Files : $proof2Files)
+                              @foreach($isStep2 ? $proof1Files : $proof2Files as $file)
+                                <div class="flex items-center gap-3 text-sm text-gray-600 dark:text-gray-300 bg-white dark:bg-zinc-900 p-3 rounded-lg border border-gray-200 dark:border-zinc-700">
+                                    <svg class="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd" /></svg>
+                                    <span class="truncate font-medium">{{ $file->getClientOriginalName() }}</span>
+                                </div>
+                              @endforeach
+                           @endif
                         </div>
                       </div>
+                      @error($isStep2 ? 'proof1Files' : 'proof2Files') <p class="mt-2 text-red-600 dark:text-red-400 text-sm">{{ $message }}</p> @enderror
+                      @error($isStep2 ? 'proof1Files.*' : 'proof2Files.*') <p class="mt-2 text-red-600 dark:text-red-400 text-sm">{{ $message }}</p> @enderror
                     </div>
-                    @error($isStep2 ? 'proof1Files.*' : 'proof2Files.*') <p class="mt-2 text-red-600 dark:text-red-400 text-sm">{{ $message }}</p> @enderror
                   </div>
-                  
-                  <div class="space-y-2">
-                    <label for="description" class="block text-sm font-semibold text-gray-700 dark:text-gray-300">Catatan Anda:</label>
-                    <textarea wire:model="{{ $isStep2 ? 'proof1Description' : 'proof2Description' }}" id="description" rows="4" placeholder="Upload link google drive jika bukti screenshot diatas gagal dikirim..." class="w-full px-4 py-3 border border-gray-300 dark:border-zinc-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-blue-500 dark:bg-zinc-700 dark:text-white transition-all"></textarea>
+
+                  <!-- Separator -->
+                  <div class="relative">
+                    <div class="absolute inset-0 flex items-center">
+                      <div class="w-full border-t border-gray-200 dark:border-zinc-700"></div>
+                    </div>
+                    <div class="relative flex justify-center text-sm">
+                      <span class="px-4 py-1 bg-white dark:bg-zinc-800/50 text-gray-500 dark:text-gray-400 rounded-full border border-gray-200 dark:border-zinc-700">ATAU / DAN</span>
+                    </div>
+                  </div>
+
+                  <!-- Option 2: Description / Link -->
+                  <div class="space-y-4">
+                    <label for="description-desktop" class="block text-base font-semibold text-gray-700 dark:text-gray-300">
+                        Catatan / Link Bukti
+                        <span class="text-sm font-normal text-gray-500 ml-1">(Wajib jika tidak upload file)</span>
+                    </label>
+                    <div class="relative">
+                        <div class="absolute top-4 left-4 text-gray-400">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                        </div>
+                        <textarea 
+                            wire:model="{{ $isStep2 ? 'proof1Description' : 'proof2Description' }}" 
+                            id="description-desktop" 
+                            rows="5" 
+                            placeholder="Contoh: https://drive.google.com/... atau 'Saya sudah mengirimkan bukti ke WhatsApp admin'"
+                            class="w-full pl-12 pr-4 py-4 border border-gray-300 dark:border-zinc-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent dark:bg-zinc-700 dark:text-white transition-all text-base shadow-sm"
+                        ></textarea>
+                    </div>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">
+                        Gunakan kolom ini jika Anda mengirim bukti via Link (Google Drive, Dropbox, dll) atau jika file terlalu besar untuk diupload langsung.
+                    </p>
                     @error($isStep2 ? 'proof1Description' : 'proof2Description') <p class="mt-2 text-red-600 dark:text-red-400 text-sm">{{ $message }}</p> @enderror
                   </div>
                 </form>
               @else
                 <!-- Awaiting Admin Verification -->
-                <div class="text-center py-12">
-                  <div class="w-20 h-20 bg-orange-100 dark:bg-orange-900/30 rounded-full flex items-center justify-center mx-auto mb-5">
-                    <svg class="w-10 h-10 text-orange-500 dark:text-orange-400 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                  </div>
-                  <h3 class="text-xl font-bold text-orange-600 dark:text-orange-400 mb-2">Menunggu Verifikasi Admin</h3>
-                  <p class="text-zinc-600 dark:text-zinc-400 max-w-md mx-auto">Bukti Anda sudah dikirim dan sedang dalam proses review.</p>
-                  <div class="mt-6 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-xl p-4">
-                    <div class="flex items-center justify-center gap-2 text-orange-700 dark:text-orange-300">
-                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                      <span class="font-medium">Mohon tunggu sementara admin memeriksa pengiriman Anda</span>
+                <div class="text-center py-16">
+                  <!-- Status Icon with Animation -->
+                  <div class="relative mx-auto mb-8 w-24 h-24">
+                    <div class="absolute inset-0 bg-orange-100 dark:bg-orange-900/30 rounded-full animate-ping opacity-75"></div>
+                    <div class="relative w-24 h-24 bg-orange-100 dark:bg-orange-900/30 rounded-full flex items-center justify-center shadow-lg">
+                      <svg class="w-12 h-12 text-orange-500 dark:text-orange-400 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
                     </div>
                   </div>
                   
-                  <!-- Info: Can take other tasks -->
-                  <div class="mt-8 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl p-6 max-w-xl mx-auto">
-                    <div class="flex items-start gap-4">
+                  <!-- Status Text -->
+                  <h3 class="text-2xl font-bold text-orange-600 dark:text-orange-400 mb-3">Menunggu Verifikasi Admin</h3>
+                  <p class="text-zinc-600 dark:text-zinc-400 text-base max-w-lg mx-auto mb-8">Bukti Anda sudah berhasil dikirim dan sedang dalam antrian review oleh admin kami.</p>
+                  
+                  <!-- Waiting Info -->
+                  <div class="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-xl p-5 max-w-lg mx-auto mb-10">
+                    <div class="flex items-center justify-center gap-3 text-orange-700 dark:text-orange-300">
+                      <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                      <span class="font-semibold text-base">Proses review biasanya memakan waktu 1-24 jam</span>
+                    </div>
+                  </div>
+                  
+                  <!-- Tip: Take other tasks -->
+                  <div class="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border-2 border-green-300 dark:border-green-700 rounded-2xl p-8 max-w-2xl mx-auto shadow-xl">
+                    <div class="flex items-start gap-5">
                       <div class="flex-shrink-0">
-                        <svg class="w-6 h-6 text-green-600 dark:text-green-400" fill="currentColor" viewBox="0 0 20 20">
-                          <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
-                        </svg>
+                        <div class="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center shadow-lg">
+                          <svg class="w-7 h-7 text-white" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd"/>
+                          </svg>
+                        </div>
                       </div>
                       <div class="text-left flex-1">
-                        <h4 class="font-semibold text-green-900 dark:text-green-200 mb-2">💡 Tip: Sambil Menunggu Verifikasi</h4>
-                        <p class="text-green-800 dark:text-green-300 text-sm mb-3">Anda bisa mengambil dan mengerjakan task lain sambil menunggu admin melakukan verifikasi. Maksimalkan waktu Anda untuk mendapatkan lebih banyak reward!</p>
-                        <a href="{{ route('user.dashboard') }}" class="inline-flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-semibold transition-colors">
-                          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-                          Kembali ke Dashboard
+                        <h4 class="font-bold text-green-900 dark:text-green-100 text-xl mb-3">💡 Maksimalkan Waktu Anda!</h4>
+                        <p class="text-green-800 dark:text-green-200 mb-5 leading-relaxed">Sambil menunggu proses verifikasi, Anda bisa mengambil dan mengerjakan task lain untuk meningkatkan penghasilan. Waktu Anda sangat berharga!</p>
+                        <a href="{{ route('user.dashboard') }}" class="inline-flex items-center gap-2 px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold transition-all transform hover:scale-105 shadow-lg hover:shadow-xl">
+                          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path></svg>
+                          Ambil Task Lain Sekarang
                         </a>
                       </div>
                     </div>
