@@ -796,13 +796,12 @@
 
     <!-- Weekly Task Warning Modal -->
     @if($showWeeklyWarningModal)
-    <div class="fixed inset-0 z-50 overflow-y-auto">
-        <!-- Overlay -->
-        <div class="fixed inset-0 bg-black/70 backdrop-blur-sm transition-opacity" wire:click="cancelTakeTask"></div>
-        
-        <!-- Modal Container -->
-        <div class="flex min-h-screen items-center justify-center p-3 sm:p-4">
-            <div class="relative bg-white dark:bg-zinc-800 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
+    <!-- Overlay -->
+    <div class="fixed inset-0 z-40 bg-black/70" wire:click="cancelTakeTask"></div>
+    
+    <!-- Modal -->
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4">
+        <div class="bg-white dark:bg-zinc-800 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
             <!-- Header with Warning Icon -->
             <div class="bg-gradient-to-r from-amber-500 to-orange-500 px-4 py-4 sm:px-6 sm:py-5">
                 <div class="flex items-center gap-3">
@@ -911,7 +910,6 @@
                     <span wire:loading.remove wire:target="cancelTakeTask">Batal, Tunggu Minggu Depan</span>
                     <span wire:loading wire:target="cancelTakeTask" style="display: none;">Menutup...</span>
                 </button>
-            </div>
             </div>
         </div>
     </div>

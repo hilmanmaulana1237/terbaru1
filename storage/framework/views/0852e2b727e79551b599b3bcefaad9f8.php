@@ -286,106 +286,43 @@
                     </div>
                   </div>
                 <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
-                <form wire:submit="<?php echo e($isStep2 ? 'submitProof1' : 'submitProof2'); ?>" class="space-y-8">
-                  
-                  <!-- Option 1: File Upload -->
-                  <div class="bg-gray-50 dark:bg-zinc-800/50 rounded-xl p-5 border border-dashed border-gray-300 dark:border-zinc-700 hover:border-green-500 dark:hover:border-green-500 transition-colors">
-                    <div class="flex flex-col items-center justify-center text-center">
-                      <div class="mb-4 p-3 bg-green-100 dark:bg-green-900/30 rounded-full">
-                        <svg class="w-8 h-8 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
-                        </svg>
-                      </div>
-                      <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-1">Upload Bukti File / Zip</h3>
-                      <p class="text-sm text-gray-500 dark:text-gray-400 mb-4 max-w-sm">
-                        Upload screenshot, dokumen, atau folder (dalam bentuk .zip). <br>
-                        <span class="text-xs text-green-600 dark:text-green-400 font-medium">*Jika upload file, deskripsi opsional.</span>
-                      </p>
-                      
-                      <div x-data="{ isUploading: false, progress: 0 }" 
-                           x-on:livewire-upload-start="isUploading = true"
-                           x-on:livewire-upload-finish="isUploading = false"
-                           x-on:livewire-upload-error="isUploading = false"
-                           x-on:livewire-upload-progress="progress = $event.detail.progress"
-                           class="w-full max-w-md relative">
-                        
-                        <label class="w-full flex flex-col items-center px-4 py-6 bg-white dark:bg-zinc-800 text-green-600 rounded-lg shadow-sm tracking-wide uppercase border border-green-500 cursor-pointer hover:bg-green-50 dark:hover:bg-zinc-700 transition-colors">
-                            <span class="text-base leading-normal font-semibold">Pilih File</span>
-                            <input type="file" wire:model="<?php echo e($isStep2 ? 'proof1Files' : 'proof2Files'); ?>" multiple accept="image/*,application/pdf,.doc,.docx,.zip,.rar" class="hidden" />
-                        </label>
-                        
-                        <!-- Upload Progress -->
-                        <div x-show="isUploading" x-transition class="mt-4">
-                          <div class="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700 overflow-hidden">
-                            <div class="bg-green-600 h-2.5 rounded-full transition-all duration-300" :style="`width: ${progress}%`"></div>
+                <form wire:submit="<?php echo e($isStep2 ? 'submitProof1' : 'submitProof2'); ?>" class="space-y-5">
+                  <div class="space-y-2">
+                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300">Evidence Files</label>
+                    <div x-data="{ isUploading: false, progress: 0 }" 
+                         x-on:livewire-upload-start="isUploading = true"
+                         x-on:livewire-upload-finish="isUploading = false"
+                         x-on:livewire-upload-error="isUploading = false"
+                         x-on:livewire-upload-progress="progress = $event.detail.progress"
+                         class="relative">
+                      <input type="file" wire:model="<?php echo e($isStep2 ? 'proof1Files' : 'proof2Files'); ?>" multiple accept="image/*,application/pdf,.doc,.docx" class="block w-full text-sm text-gray-500 file:mr-4 file:py-3 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100 dark:file:bg-zinc-700 dark:file:text-zinc-300 dark:hover:file:bg-zinc-600 transition-colors"/>
+                      <div x-show="isUploading" class="absolute inset-0 w-full h-full bg-white/70 dark:bg-zinc-800/70 backdrop-blur-sm rounded-lg">
+                        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full px-4">
+                          <div class="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
+                            <div class="bg-green-600 h-2.5 rounded-full" :style="`width: ${progress}%`"></div>
                           </div>
-                          <p class="text-center text-xs text-gray-600 dark:text-gray-400 mt-2" x-text="`Uploading... ${progress}%`"></p>
-                        </div>
-                        
-                         <!-- File Preview List -->
-                        <div class="mt-4 text-left space-y-2">
-                           <!--[if BLOCK]><![endif]--><?php if($isStep2 ? $proof1Files : $proof2Files): ?>
-                              <!--[if BLOCK]><![endif]--><?php $__currentLoopData = $isStep2 ? $proof1Files : $proof2Files; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $file): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                                <div class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300 bg-white dark:bg-zinc-900 p-2 rounded border border-gray-200 dark:border-zinc-700">
-                                    <svg class="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd" /></svg>
-                                    <span class="truncate"><?php echo e($file->getClientOriginalName()); ?></span>
-                                </div>
-                              <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><!--[if ENDBLOCK]><![endif]-->
-                           <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+                          <p class="text-center text-sm text-gray-600 dark:text-gray-400 mt-2" x-text="`Uploading... ${progress}%`"></p>
                         </div>
                       </div>
-                      <!--[if BLOCK]><![endif]--><?php $__errorArgs = [$isStep2 ? 'proof1Files' : 'proof2Files'];
+                    </div>
+                    <!--[if BLOCK]><![endif]--><?php $__errorArgs = [$isStep2 ? 'proof1Files.*' : 'proof2Files.*'];
 $__bag = $errors->getBag($__errorArgs[1] ?? 'default');
 if ($__bag->has($__errorArgs[0])) :
 if (isset($message)) { $__messageOriginal = $message; }
-$message = $__bag->first($__errorArgs[0]); ?> <p class="mt-2 text-red-600 dark:text-red-400 text-sm"><?php echo e($message); ?></p> <?php unset($message);
+$message = $__bag->first($__errorArgs[0]); ?> <p class="mt-2 text-red-600 dark:text-red-400 text-xs"><?php echo e($message); ?></p> <?php unset($message);
 if (isset($__messageOriginal)) { $message = $__messageOriginal; }
 endif;
 unset($__errorArgs, $__bag); ?><!--[if ENDBLOCK]><![endif]-->
-                      <!--[if BLOCK]><![endif]--><?php $__errorArgs = [$isStep2 ? 'proof1Files.*' : 'proof2Files.*'];
-$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
-if ($__bag->has($__errorArgs[0])) :
-if (isset($message)) { $__messageOriginal = $message; }
-$message = $__bag->first($__errorArgs[0]); ?> <p class="mt-2 text-red-600 dark:text-red-400 text-sm"><?php echo e($message); ?></p> <?php unset($message);
-if (isset($__messageOriginal)) { $message = $__messageOriginal; }
-endif;
-unset($__errorArgs, $__bag); ?><!--[if ENDBLOCK]><![endif]-->
-                    </div>
                   </div>
-
-                  <!-- Separator -->
-                  <div class="relative">
-                    <div class="absolute inset-0 flex items-center">
-                      <div class="w-full border-t border-gray-200 dark:border-zinc-700"></div>
-                    </div>
-                    <div class="relative flex justify-center text-sm">
-                      <span class="px-2 bg-white dark:bg-zinc-800/50 text-gray-500 dark:text-gray-400">ATAU / DAN</span>
-                    </div>
-                  </div>
-
-                  <!-- Option 2: Description / Link -->
-                  <div class="space-y-3">
-                    <label for="description" class="block text-sm font-semibold text-gray-700 dark:text-gray-300">
-                        Catatan / Link Bukti
-                        <span class="text-xs font-normal text-gray-500 ml-1">(Wajib jika tidak upload file)</span>
-                    </label>
-                    <div class="relative">
-                        <textarea 
-                            wire:model="<?php echo e($isStep2 ? 'proof1Description' : 'proof2Description'); ?>" 
-                            id="description" 
-                            rows="4" 
-                            placeholder="Contoh: https://drive.google.com/... atau 'Saya sudah mengirimkan bukti ke WhatsApp admin'"
-                            class="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-zinc-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent dark:bg-zinc-700 dark:text-white transition-all text-sm shadow-sm"
-                        ></textarea>
-                    </div>
-                    <p class="text-xs text-gray-500 dark:text-gray-400">
-                        Gunakan kolom ini jika Anda mengirim bukti via Link (Google Drive, Dropbox, dll) atau jika file terlalu besar untuk diupload langsung.
-                    </p>
+                  
+                  <div class="space-y-2">
+                    <label for="description" class="block text-sm font-semibold text-gray-700 dark:text-gray-300">Catatan Anda:</label>
+                    <textarea wire:model="<?php echo e($isStep2 ? 'proof1Description' : 'proof2Description'); ?>" id="description" rows="4" placeholder="Upload link google drive jika bukti screenshot diatas gagal dikirim..." class="w-full px-4 py-3 border border-gray-300 dark:border-zinc-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-blue-500 dark:bg-zinc-700 dark:text-white transition-all text-sm"></textarea>
                     <!--[if BLOCK]><![endif]--><?php $__errorArgs = [$isStep2 ? 'proof1Description' : 'proof2Description'];
 $__bag = $errors->getBag($__errorArgs[1] ?? 'default');
 if ($__bag->has($__errorArgs[0])) :
 if (isset($message)) { $__messageOriginal = $message; }
-$message = $__bag->first($__errorArgs[0]); ?> <p class="mt-2 text-red-600 dark:text-red-400 text-sm"><?php echo e($message); ?></p> <?php unset($message);
+$message = $__bag->first($__errorArgs[0]); ?> <p class="mt-2 text-red-600 dark:text-red-400 text-xs"><?php echo e($message); ?></p> <?php unset($message);
 if (isset($__messageOriginal)) { $message = $__messageOriginal; }
 endif;
 unset($__errorArgs, $__bag); ?><!--[if ENDBLOCK]><![endif]-->
@@ -838,58 +775,26 @@ unset($__errorArgs, $__bag); ?><!--[if ENDBLOCK]><![endif]-->
                     </div>
                   </div>
                 <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
-                <form wire:submit="<?php echo e($isStep2 ? 'submitProof1' : 'submitProof2'); ?>" class="space-y-8">
-                  
-                  <!-- Option 1: File Upload -->
-                  <div class="bg-gray-50 dark:bg-zinc-800/50 rounded-xl p-6 border border-dashed border-gray-300 dark:border-zinc-700 hover:border-green-500 dark:hover:border-green-500 transition-colors">
-                    <div class="flex flex-col items-center justify-center text-center">
-                      <div class="mb-4 p-4 bg-green-100 dark:bg-green-900/30 rounded-full">
-                        <svg class="w-10 h-10 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
-                        </svg>
-                      </div>
-                      <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">Upload Bukti File / Zip</h3>
-                      <p class="text-sm text-gray-500 dark:text-gray-400 mb-6 max-w-sm">
-                        Upload screenshot, dokumen, atau folder (dalam bentuk .zip). <br>
-                        <span class="text-xs text-green-600 dark:text-green-400 font-medium">*Jika upload file, deskripsi opsional.</span>
-                      </p>
-                      
-                      <div x-data="{ isUploading: false, progress: 0 }" 
-                           x-on:livewire-upload-start="isUploading = true"
-                           x-on:livewire-upload-finish="isUploading = false"
-                           x-on:livewire-upload-error="isUploading = false"
-                           x-on:livewire-upload-progress="progress = $event.detail.progress"
-                           class="w-full max-w-md relative">
-                        
-                        <label class="w-full flex flex-col items-center px-4 py-8 bg-white dark:bg-zinc-800 text-green-600 rounded-lg shadow-sm tracking-wide uppercase border border-green-500 cursor-pointer hover:bg-green-50 dark:hover:bg-zinc-700 transition-colors transform hover:-translate-y-1 duration-200">
-                            <span class="text-base leading-normal font-semibold flex items-center gap-2">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
-                                Pilih File
-                            </span>
-                            <input type="file" wire:model="<?php echo e($isStep2 ? 'proof1Files' : 'proof2Files'); ?>" multiple accept="image/*,application/pdf,.doc,.docx,.zip,.rar" class="hidden" />
-                        </label>
-                        
-                        <!-- Upload Progress -->
-                        <div x-show="isUploading" x-transition class="mt-4">
-                          <div class="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700 overflow-hidden">
-                            <div class="bg-green-600 h-2.5 rounded-full transition-all duration-300" :style="`width: ${progress}%`"></div>
+                <form wire:submit="<?php echo e($isStep2 ? 'submitProof1' : 'submitProof2'); ?>" class="space-y-6">
+                  <div class="space-y-2">
+                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300">File Bukti Screenshot</label>
+                    <div x-data="{ isUploading: false, progress: 0 }" 
+                         x-on:livewire-upload-start="isUploading = true"
+                         x-on:livewire-upload-finish="isUploading = false"
+                         x-on:livewire-upload-error="isUploading = false"
+                         x-on:livewire-upload-progress="progress = $event.detail.progress"
+                         class="relative">
+                      <input type="file" wire:model="<?php echo e($isStep2 ? 'proof1Files' : 'proof2Files'); ?>" multiple accept="image/*,application/pdf,.doc,.docx" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100 dark:file:bg-zinc-700 dark:file:text-zinc-300 dark:hover:file:bg-zinc-600 transition-colors"/>
+                      <div x-show="isUploading" class="absolute inset-0 w-full h-full bg-white/70 dark:bg-zinc-800/70 backdrop-blur-sm">
+                        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full px-4">
+                          <div class="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
+                            <div class="bg-green-600 h-2.5 rounded-full" :style="`width: ${progress}%`"></div>
                           </div>
-                          <p class="text-center text-xs text-gray-600 dark:text-gray-400 mt-2" x-text="`Uploading... ${progress}%`"></p>
-                        </div>
-                        
-                         <!-- File Preview List -->
-                        <div class="mt-4 text-left space-y-2">
-                           <!--[if BLOCK]><![endif]--><?php if($isStep2 ? $proof1Files : $proof2Files): ?>
-                              <!--[if BLOCK]><![endif]--><?php $__currentLoopData = $isStep2 ? $proof1Files : $proof2Files; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $file): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                                <div class="flex items-center gap-3 text-sm text-gray-600 dark:text-gray-300 bg-white dark:bg-zinc-900 p-3 rounded-lg border border-gray-200 dark:border-zinc-700">
-                                    <svg class="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd" /></svg>
-                                    <span class="truncate font-medium"><?php echo e($file->getClientOriginalName()); ?></span>
-                                </div>
-                              <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><!--[if ENDBLOCK]><![endif]-->
-                           <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+                          <p class="text-center text-sm text-gray-600 dark:text-gray-400 mt-2" x-text="`Uploading... ${progress}%`"></p>
                         </div>
                       </div>
-                      <!--[if BLOCK]><![endif]--><?php $__errorArgs = [$isStep2 ? 'proof1Files' : 'proof2Files'];
+                    </div>
+                    <!--[if BLOCK]><![endif]--><?php $__errorArgs = [$isStep2 ? 'proof1Files.*' : 'proof2Files.*'];
 $__bag = $errors->getBag($__errorArgs[1] ?? 'default');
 if ($__bag->has($__errorArgs[0])) :
 if (isset($message)) { $__messageOriginal = $message; }
@@ -897,48 +802,11 @@ $message = $__bag->first($__errorArgs[0]); ?> <p class="mt-2 text-red-600 dark:t
 if (isset($__messageOriginal)) { $message = $__messageOriginal; }
 endif;
 unset($__errorArgs, $__bag); ?><!--[if ENDBLOCK]><![endif]-->
-                      <!--[if BLOCK]><![endif]--><?php $__errorArgs = [$isStep2 ? 'proof1Files.*' : 'proof2Files.*'];
-$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
-if ($__bag->has($__errorArgs[0])) :
-if (isset($message)) { $__messageOriginal = $message; }
-$message = $__bag->first($__errorArgs[0]); ?> <p class="mt-2 text-red-600 dark:text-red-400 text-sm"><?php echo e($message); ?></p> <?php unset($message);
-if (isset($__messageOriginal)) { $message = $__messageOriginal; }
-endif;
-unset($__errorArgs, $__bag); ?><!--[if ENDBLOCK]><![endif]-->
-                    </div>
                   </div>
-
-                  <!-- Separator -->
-                  <div class="relative">
-                    <div class="absolute inset-0 flex items-center">
-                      <div class="w-full border-t border-gray-200 dark:border-zinc-700"></div>
-                    </div>
-                    <div class="relative flex justify-center text-sm">
-                      <span class="px-4 py-1 bg-white dark:bg-zinc-800/50 text-gray-500 dark:text-gray-400 rounded-full border border-gray-200 dark:border-zinc-700">ATAU / DAN</span>
-                    </div>
-                  </div>
-
-                  <!-- Option 2: Description / Link -->
-                  <div class="space-y-4">
-                    <label for="description-desktop" class="block text-base font-semibold text-gray-700 dark:text-gray-300">
-                        Catatan / Link Bukti
-                        <span class="text-sm font-normal text-gray-500 ml-1">(Wajib jika tidak upload file)</span>
-                    </label>
-                    <div class="relative">
-                        <div class="absolute top-4 left-4 text-gray-400">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
-                        </div>
-                        <textarea 
-                            wire:model="<?php echo e($isStep2 ? 'proof1Description' : 'proof2Description'); ?>" 
-                            id="description-desktop" 
-                            rows="5" 
-                            placeholder="Contoh: https://drive.google.com/... atau 'Saya sudah mengirimkan bukti ke WhatsApp admin'"
-                            class="w-full pl-12 pr-4 py-4 border border-gray-300 dark:border-zinc-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent dark:bg-zinc-700 dark:text-white transition-all text-base shadow-sm"
-                        ></textarea>
-                    </div>
-                    <p class="text-sm text-gray-500 dark:text-gray-400">
-                        Gunakan kolom ini jika Anda mengirim bukti via Link (Google Drive, Dropbox, dll) atau jika file terlalu besar untuk diupload langsung.
-                    </p>
+                  
+                  <div class="space-y-2">
+                    <label for="description" class="block text-sm font-semibold text-gray-700 dark:text-gray-300">Catatan Anda:</label>
+                    <textarea wire:model="<?php echo e($isStep2 ? 'proof1Description' : 'proof2Description'); ?>" id="description" rows="4" placeholder="Upload link google drive jika bukti screenshot diatas gagal dikirim..." class="w-full px-4 py-3 border border-gray-300 dark:border-zinc-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-blue-500 dark:bg-zinc-700 dark:text-white transition-all"></textarea>
                     <!--[if BLOCK]><![endif]--><?php $__errorArgs = [$isStep2 ? 'proof1Description' : 'proof2Description'];
 $__bag = $errors->getBag($__errorArgs[1] ?? 'default');
 if ($__bag->has($__errorArgs[0])) :
