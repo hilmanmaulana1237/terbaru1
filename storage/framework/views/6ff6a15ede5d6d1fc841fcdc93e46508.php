@@ -1,0 +1,847 @@
+<div>
+    <!-- Android/Mobile View -->
+    <div class="block sm:hidden">
+        <div class="flex h-full w-full flex-1 flex-col gap-4 p-3 text-base-content">
+            <!--[if BLOCK]><![endif]--><?php if($viewMode === 'categories'): ?>
+                <!-- Header -->
+                <div class="flex flex-col gap-3">
+                    <div class="space-y-1">
+                        <h1 class="text-2xl font-bold text-accent">Pilih Kategori Task</h1>
+                        <p class="text-sm text-muted-foreground">Pilih kategori untuk melihat task yang tersedia</p>
+                    </div>
+                    <div class="flex items-center justify-end">
+                        <a href="<?php echo e(route('user.history')); ?>" class="inline-flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-colors w-full justify-center">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            Task History
+                        </a>
+                    </div>
+                </div>
+                <!-- Category Cards -->
+                <div class="grid grid-cols-1 gap-4">
+                    <!--[if BLOCK]><![endif]--><?php $__empty_1 = true; $__currentLoopData = $categories; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $category): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
+                        <?php
+                            $isPremiumAdmin = $category->createdBy && $category->createdBy->badge === 'premium_admin';
+                        ?>
+                        <div 
+                            wire:click="selectCategory(<?php echo e($category->id); ?>)"
+                            wire:loading.class="opacity-50 cursor-wait"
+                            wire:target="selectCategory(<?php echo e($category->id); ?>)"
+                            class="bg-white dark:bg-zinc-800 rounded-xl border <?php echo e($isPremiumAdmin ? 'border-amber-400 dark:border-amber-500 ring-2 ring-amber-200 dark:ring-amber-900/50' : 'border-zinc-200 dark:border-zinc-700'); ?> p-4 hover:shadow-lg dark:hover:shadow-zinc-900/20 transition-all duration-200 cursor-pointer group hover:border-green-300 dark:hover:border-green-600 relative overflow-hidden">
+                            
+                            <!--[if BLOCK]><![endif]--><?php if($isPremiumAdmin): ?>
+                                <div class="absolute top-0 right-0">
+                                    <div class="bg-gradient-to-l from-amber-500 to-yellow-400 text-white text-xs font-bold px-3 py-1 rounded-bl-lg shadow-sm">
+                                        ⭐ VIP
+                                    </div>
+                                </div>
+                            <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+
+                            <div class="flex items-center gap-3">
+                                <?php
+                                    $words = explode(' ', trim($category->name));
+                                    $initials = count($words) >= 2 
+                                        ? strtoupper(substr($words[0], 0, 1) . substr($words[1], 0, 1))
+                                        : strtoupper(substr($category->name, 0, 2));
+                                ?>
+                                <div class="w-10 h-10 <?php echo e($isPremiumAdmin ? 'bg-gradient-to-br from-amber-400 to-yellow-500' : 'bg-gradient-to-br from-blue-500 to-purple-600'); ?> rounded-lg flex items-center justify-center text-white font-bold text-sm group-hover:scale-110 transition-transform duration-200">
+                                    <?php echo e($initials); ?>
+
+                                </div>
+                                <div class="flex-1">
+                                    <h3 class="font-bold text-base text-zinc-900 dark:text-white group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors">
+                                        <?php echo e($category->name); ?>
+
+                                    </h3>
+                                    <div class="flex items-center gap-2 text-xs">
+                                        <span class="text-zinc-600 dark:text-zinc-400"><?php echo e($category->available_tasks_count); ?> tersedia</span>
+                                        <!--[if BLOCK]><![endif]--><?php if($category->in_progress_count > 0): ?>
+                                            <span class="text-amber-600 dark:text-amber-400">• <?php echo e($category->in_progress_count); ?> dikerjakan</span>
+                                        <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+                                    </div>
+                                </div>
+                                <div class="w-8 h-8 bg-zinc-100 dark:bg-zinc-700 rounded-full flex items-center justify-center group-hover:bg-green-100 dark:group-hover:bg-green-900 transition-colors">
+                                    <!-- Loading spinner -->
+                                    <svg wire:loading wire:target="selectCategory(<?php echo e($category->id); ?>)" style="display: none;" class="w-4 h-4 animate-spin text-green-600" fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                    <!-- Arrow icon -->
+                                    <svg wire:loading.remove wire:target="selectCategory(<?php echo e($category->id); ?>)" class="w-4 h-4 text-zinc-600 dark:text-zinc-400 group-hover:text-green-600 dark:group-hover:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                    </svg>
+                                </div>
+                            </div>
+
+                            <!-- Admin Info -->
+                            <!--[if BLOCK]><![endif]--><?php if($category->createdBy): ?>
+                                <div class="mt-3 flex items-center gap-2 text-xs <?php echo e($isPremiumAdmin ? 'text-amber-600 dark:text-amber-400' : 'text-zinc-500 dark:text-zinc-400'); ?>">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                                    <span>Admin: <strong><?php echo e($category->createdBy->name); ?></strong></span>
+                                    <!--[if BLOCK]><![endif]--><?php if($isPremiumAdmin): ?>
+                                        <span class="px-1.5 py-0.5 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded text-[10px] font-semibold">PREMIUM</span>
+                                    <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+                                </div>
+                            <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+
+                            <!--[if BLOCK]><![endif]--><?php if($category->description): ?>
+                                <p class="mt-2 text-xs text-zinc-600 dark:text-zinc-400 line-clamp-2">
+                                    <?php echo e($category->description); ?>
+
+                                </p>
+                            <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+                        </div>
+                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
+                        <div class="col-span-full">
+                            <div class="text-center py-8">
+                                <div class="w-16 h-16 bg-zinc-100 dark:bg-zinc-800 rounded-full flex items-center justify-center mx-auto mb-3">
+                                    <svg class="w-8 h-8 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                                    </svg>
+                                </div>
+                                <h3 class="text-base font-medium text-zinc-900 dark:text-white mb-1">Tidak Ada Kategori Dengan Task Tersedia</h3>
+                                <p class="text-sm text-zinc-600 dark:text-zinc-400">Saat ini belum ada kategori yang memiliki task tersedia.</p>
+                            </div>
+                        </div>
+                    <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+                </div>
+            <?php else: ?>
+                <!-- Header for Tasks View -->
+                <div class="flex flex-col gap-3">
+                    <!-- Back Button Row -->
+                    <div class="flex items-center">
+                        <button wire:click="backToCategories" 
+                            wire:loading.class="opacity-50 cursor-wait"
+                            wire:target="backToCategories"
+                            class="inline-flex items-center gap-1.5 px-3 py-2 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg text-zinc-700 dark:text-zinc-300 hover:bg-green-50 dark:hover:bg-zinc-700 transition-colors text-sm">
+                            <!-- Loading spinner -->
+                            <svg wire:loading wire:target="backToCategories" style="display: none;" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            <!-- Back arrow -->
+                            <svg wire:loading.remove wire:target="backToCategories" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                            <span wire:loading.remove wire:target="backToCategories">Kembali</span>
+                            <span wire:loading wire:target="backToCategories" style="display: none;">Loading...</span>
+                        </button>
+                    </div>
+                    
+                    <!-- Category Title Card -->
+                    <div class="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border border-green-200 dark:border-green-800 rounded-xl p-4">
+                        <h1 class="text-xl font-bold text-zinc-900 dark:text-white text-center"><?php echo e($selectedCategoryName); ?></h1>
+                        <p class="text-xs text-zinc-600 dark:text-zinc-400 text-center mt-1">Task yang tersedia dalam kategori ini</p>
+                    </div>
+
+                    <!-- Admin Info Card -->
+                    <!--[if BLOCK]><![endif]--><?php if($selectedCategoryAdmin): ?>
+                        <?php
+                            $isPremiumAdmin = $selectedCategoryAdmin->badge === 'premium_admin';
+                        ?>
+                        <div class="bg-gradient-to-r <?php echo e($isPremiumAdmin ? 'from-amber-50 to-yellow-50 dark:from-amber-900/20 dark:to-yellow-900/20 border-amber-200 dark:border-amber-800' : 'from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border-blue-200 dark:border-blue-800'); ?> border rounded-xl p-3">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 <?php echo e($isPremiumAdmin ? 'bg-gradient-to-br from-amber-400 to-yellow-500' : 'bg-gradient-to-br from-blue-500 to-indigo-600'); ?> rounded-full flex items-center justify-center text-white font-bold text-sm shadow-lg">
+                                    <?php echo e(strtoupper(substr($selectedCategoryAdmin->name, 0, 2))); ?>
+
+                                </div>
+                                <div class="flex-1">
+                                    <div class="flex items-center gap-2">
+                                        <span class="font-semibold text-sm text-zinc-900 dark:text-white"><?php echo e($selectedCategoryAdmin->name); ?></span>
+                                        <!--[if BLOCK]><![endif]--><?php if($isPremiumAdmin): ?>
+                                            <span class="px-1.5 py-0.5 bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-300 rounded text-[10px] font-bold">⭐ VIP</span>
+                                        <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+                                    </div>
+                                    <p class="text-xs text-zinc-500 dark:text-zinc-400">Admin Pembuat Kategori</p>
+                                </div>
+                                <!--[if BLOCK]><![endif]--><?php if($selectedCategoryAdmin->whatsapp): ?>
+                                    <a href="https://wa.me/<?php echo e($selectedCategoryAdmin->whatsapp); ?>" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-500 hover:bg-green-600 text-white rounded-lg text-xs font-medium transition-colors shadow-sm">
+                                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                                        Hubungi
+                                    </a>
+                                <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+                            </div>
+                        </div>
+                    <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+
+                    <div class="flex items-center justify-end">
+                        <a href="<?php echo e(route('user.history')); ?>" class="inline-flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-colors w-full justify-center">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            Task History
+                        </a>
+                    </div>
+                </div>
+                <!-- Task Filters (only show when viewing tasks) -->
+                <div class="bg-white dark:bg-zinc-800 rounded-xl border border-zinc-200 dark:border-zinc-700 p-4">
+                    <div class="grid grid-cols-1 gap-3">
+                        <!-- Search -->
+                        <div>
+                            <label class="block text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-1">Cari Task</label>
+                            <input 
+                                type="text" 
+                                wire:model.live="search"
+                                placeholder="Cari task..."
+                                class="w-full px-3 py-2.5 border border-zinc-300 dark:border-zinc-600 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 dark:bg-zinc-700 dark:text-white text-sm"
+                            />
+                        </div>
+                        <!-- Status Filter -->
+                        <div>
+                            <label class="block text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-1">Status</label>
+                            <select 
+                                wire:model.live="filter"
+                                class="w-full px-3 py-2.5 border border-zinc-300 dark:border-zinc-600 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 dark:bg-zinc-700 dark:text-white text-sm"
+                            >
+                                <option value="available">Task Tersedia</option>
+                                <option value="my_tasks">Task Saya (Dikerjakan)</option>
+                                <option value="completed">Task Selesai</option>
+                                <option value="failed">Task Gagal/Dibatalkan</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <!-- Tasks Grid (only show when viewing tasks) -->
+                <!--[if BLOCK]><![endif]--><?php if($viewMode === 'tasks'): ?>
+                    <div class="grid grid-cols-1 gap-4">
+                    <!--[if BLOCK]><![endif]--><?php $__empty_1 = true; $__currentLoopData = $tasks; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $task): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
+                        <?php
+                            $userTask = $task->userTasks->where('user_id', auth()->id())->first();
+                        ?>
+                        <div class="bg-white dark:bg-zinc-800 rounded-xl border border-zinc-200 dark:border-zinc-700 p-4 space-y-3">
+                            <!-- Category Badge and Difficulty -->
+                            <div class="flex items-center justify-between">
+                                <span class="px-2 py-1 bg-green-100 text-blue-800 rounded text-xs font-medium">
+                                    <?php echo e($task->category->name); ?>
+
+                                </span>
+                                <span class="px-2 py-1 rounded text-xs font-medium
+                                           <?php if($task->difficulty_level === 'easy'): ?> bg-green-100 text-green-800
+                                           <?php elseif($task->difficulty_level === 'medium'): ?> bg-yellow-100 text-yellow-800
+                                           <?php else: ?> bg-red-100 text-red-800 <?php endif; ?>">
+                                    <?php echo e(ucfirst($task->difficulty_level)); ?>
+
+                                </span>
+                            </div>
+                            <!-- Task Title -->
+                            <h3 class="text-base font-semibold text-zinc-900 dark:text-white line-clamp-2">
+                                <?php echo e($task->title); ?>
+
+                            </h3>
+                            <!-- Task Description -->
+                            <p class="text-xs text-zinc-600 dark:text-zinc-400 line-clamp-3">
+                                <?php echo e(Str::limit(strip_tags($task->description), 100)); ?>
+
+                            </p>
+                            <!-- Admin Info -->
+                            <div class="flex items-center gap-2 p-2 bg-zinc-50 dark:bg-zinc-700/50 rounded-lg">
+                                <div class="w-6 h-6 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                                    <span class="text-white text-xs font-bold"><?php echo e(substr($task->creator->name ?? 'A', 0, 1)); ?></span>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-xs font-medium text-zinc-900 dark:text-white truncate">
+                                        <?php echo e($task->creator->name ?? 'Admin'); ?>
+
+                                    </p>
+                                </div>
+                                <!--[if BLOCK]><![endif]--><?php if($task->creator && $task->creator->badge === 'premium_admin'): ?>
+                                    <span class="inline-flex items-center gap-1 px-1.5 py-0.5 bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-300 rounded text-xs font-medium">
+                                        <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
+                                        VIP
+                                    </span>
+                                <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+                            </div>
+                            <!-- Estimasi Nominal -->
+                            <!--[if BLOCK]><![endif]--><?php if($task->estimated_amount): ?>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-xs text-zinc-500 dark:text-zinc-400">💰 Estimasi Pendapatan Anda:</span>
+                                    <span class="text-sm font-bold text-green-600 dark:text-green-400">
+                                        Rp <?php echo e(number_format($task->estimated_amount, 0, ',', '.')); ?>
+
+                                    </span>
+                                </div>
+                            <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+                            <!-- UserTask Status (untuk my_tasks, completed, failed) -->
+                            <!--[if BLOCK]><![endif]--><?php if($userTask && in_array($filter, ['my_tasks', 'completed', 'failed'])): ?>
+                                <div class="border-t border-zinc-200 dark:border-zinc-700 pt-3 space-y-2">
+                                    <!-- Status Badge -->
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-xs font-medium text-zinc-700 dark:text-zinc-300">Status:</span>
+                                        <span class="px-2 py-1 rounded-full text-xs font-semibold
+                                                   <?php if($userTask->isOverdue()): ?> bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200
+                                                   <?php elseif($userTask->status === 'taken'): ?> bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200
+                                                   <?php elseif($userTask->status === 'pending_verification_1'): ?> bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200
+                                                   <?php elseif($userTask->status === 'pending_verification_2'): ?> bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200
+                                                   <?php elseif($userTask->status === 'completed'): ?> bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200
+                                                   <?php elseif($userTask->status === 'failed'): ?> bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200
+                                                   <?php elseif($userTask->status === 'cancelled'): ?> bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200
+                                                   <?php else: ?> bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200 <?php endif; ?>">
+                                            <?php echo e($userTask->isOverdue() ? 'Gagal (Kadaluarsa)' : \App\Models\UserTask::STATUSES[$userTask->status]); ?>
+
+                                        </span>
+                                    </div>
+                                    <!-- Payment Info (untuk completed) -->
+                                    <!--[if BLOCK]><![endif]--><?php if($userTask->status === 'completed'): ?>
+                                        <div class="flex items-center justify-between">
+                                            <span class="text-xs font-medium text-zinc-700 dark:text-zinc-300">Payment:</span>
+                                            <div class="text-right">
+                                                <div class="px-2 py-1 rounded-full text-xs font-semibold
+                                                           <?php if($userTask->payment_status === 'success'): ?> bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200
+                                                           <?php elseif($userTask->payment_status === 'failed'): ?> bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200
+                                                           <?php else: ?> bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200 <?php endif; ?>">
+                                                    <?php echo e(\App\Models\UserTask::PAYMENT_STATUSES[$userTask->payment_status]); ?>
+
+                                                </div>
+                                                <!--[if BLOCK]><![endif]--><?php if($userTask->payment_amount): ?>
+                                                    <div class="text-xs font-bold text-green-600 dark:text-green-400 mt-1">
+                                                        Rp <?php echo e(number_format($userTask->payment_amount, 0, ',', '.')); ?>
+
+                                                    </div>
+                                                <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+                                            </div>
+                                        </div>
+                                    <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+                                    <!-- Deadline Info -->
+                                    <!--[if BLOCK]><![endif]--><?php if($userTask->deadline_at): ?>
+                                        <div class="flex items-center justify-between">
+                                            <span class="text-xs font-medium text-zinc-700 dark:text-zinc-300">Deadline:</span>
+                                            <span class="text-xs <?php echo e($userTask->isOverdue() ? 'text-red-600 dark:text-red-400 font-bold' : 'text-zinc-600 dark:text-zinc-400'); ?>">
+                                                <?php echo e($userTask->deadline_at->format('d M Y H:i')); ?>
+
+                                                <!--[if BLOCK]><![endif]--><?php if($userTask->isOverdue()): ?>
+                                                    <span class="text-xs">(Overdue)</span>
+                                                <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+                                            </span>
+                                        </div>
+                                    <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+                                    <!-- Failed Count (untuk failed) -->
+                                    <!--[if BLOCK]><![endif]--><?php if($userTask->status === 'failed' && $userTask->failed_count > 0): ?>
+                                        <div class="flex items-center justify-between">
+                                            <span class="text-xs font-medium text-zinc-700 dark:text-zinc-300">Failed Attempts:</span>
+                                            <span class="text-xs text-red-600 dark:text-red-400 font-bold"><?php echo e($userTask->failed_count); ?>x</span>
+                                        </div>
+                                    <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+                                </div>
+                            <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+                            <!-- Task Info (untuk available tasks) -->
+                            <!--[if BLOCK]><![endif]--><?php if($filter === 'available'): ?>
+                                <div class="space-y-1">
+                                    <div class="flex items-center text-xs text-zinc-600 dark:text-zinc-400">
+                                        <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                        </svg>
+                                        Expired: <?php echo e($task->expired_at->format('d M Y H:i')); ?>
+
+                                    </div>
+                                    <div class="flex items-center text-xs text-zinc-600 dark:text-zinc-400">
+                                    </div>
+                                </div>
+                            <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+                            <!-- Action Button -->
+                            <!--[if BLOCK]><![endif]--><?php if($filter === 'available'): ?>
+                                <!--[if BLOCK]><![endif]--><?php if($task->isTaken()): ?>
+                                    <button disabled class="w-full px-4 py-2.5 bg-gray-300 text-gray-500 rounded-md cursor-not-allowed text-sm">
+                                        Sudah Diambil
+                                    </button>
+                                <?php elseif($task->isExpired()): ?>
+                                    <button disabled class="w-full px-4 py-2.5 bg-gray-300 text-gray-500 rounded-md cursor-not-allowed text-sm">
+                                        Task Expired
+                                    </button>
+                                <?php else: ?>
+                                    <button 
+                                        wire:click="takeTask(<?php echo e($task->id); ?>)" 
+                                        wire:loading.attr="disabled"
+                                        wire:loading.class="opacity-50 cursor-wait"
+                                        wire:target="takeTask(<?php echo e($task->id); ?>)"
+                                        class="w-full px-4 py-2.5 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors text-sm flex items-center justify-center gap-2">
+                                        <svg wire:loading wire:target="takeTask(<?php echo e($task->id); ?>)" style="display: none;" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                                        <span wire:loading.remove wire:target="takeTask(<?php echo e($task->id); ?>)">Ambil Task</span>
+                                        <span wire:loading wire:target="takeTask(<?php echo e($task->id); ?>)" style="display: none;">Memproses...</span>
+                                    </button>
+                                <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+                            <?php elseif($filter === 'my_tasks'): ?>
+                                <?php
+                                    $userTask = $task->userTasks->where('user_id', auth()->id())->first();
+                                ?>
+                                <!--[if BLOCK]><![endif]--><?php if($userTask && $userTask->isOverdue()): ?>
+                                    <div class="block w-full px-4 py-2.5 bg-red-100 text-red-600 rounded-md text-center text-sm font-semibold">
+                                        Tidak Bisa Dilanjutkan (Deadline Terlewat)
+                                    </div>
+                                <?php else: ?>
+                                    <a 
+                                        href="<?php echo e(route('user.task.work', $task->id)); ?>" 
+                                        class="block w-full px-4 py-2.5 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors text-center text-sm">
+                                        Lanjutkan Pengerjaan
+                                    </a>
+                                <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+                            <?php elseif($filter === 'completed'): ?>
+                                <a 
+                                    href="<?php echo e(route('user.task.work', $task->id)); ?>" 
+                                    class="block w-full px-4 py-2.5 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors text-center text-sm">
+                                    Lihat Status & Detail
+                                </a>
+                            <?php elseif($filter === 'failed'): ?>
+                                <div class="space-y-2">
+                                    <!--[if BLOCK]><![endif]--><?php if($userTask->status === 'failed'): ?>
+                                        <a 
+                                            href="<?php echo e(route('user.task.work', $task->id)); ?>" 
+                                            class="block w-full px-4 py-2.5 bg-orange-600 text-white rounded-md hover:bg-orange-700 transition-colors text-center text-sm">
+                                            Lihat Detail Kegagalan
+                                        </a>
+                                    <?php elseif($userTask->status === 'cancelled'): ?>
+                                        <div class="text-gray-600 dark:text-gray-400 font-medium text-center py-2 text-sm">
+                                            Task Dibatalkan
+                                        </div>
+                                    <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+                                </div>
+                            <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+                        </div>
+                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
+                        <div class="col-span-full">
+                            <div class="bg-white dark:bg-zinc-800 rounded-xl border border-zinc-200 dark:border-zinc-700 text-center py-8">
+                                <svg class="w-12 h-12 text-zinc-400 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                </svg>
+                                <h3 class="text-base font-semibold text-zinc-900 dark:text-white mb-1">Tidak ada task ditemukan</h3>
+                                <p class="text-sm text-zinc-600 dark:text-zinc-400">Coba ubah filter atau kata kunci pencarian</p>
+                            </div>
+                        </div>
+                    <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+                </div>
+                <!-- Pagination -->
+                <!--[if BLOCK]><![endif]--><?php if($tasks->hasPages()): ?>
+                    <div class="flex justify-center">
+                        <?php echo e($tasks->links()); ?>
+
+                    </div>
+                <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+        <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+            <!-- Flash Messages -->
+            <!--[if BLOCK]><![endif]--><?php if(session()->has('success')): ?>
+                <div class="fixed bottom-4 right-4 left-4 z-50">
+                    <div class="bg-green-500 text-white px-4 py-3 rounded-md shadow-lg text-center">
+                        <?php echo e(session('success')); ?>
+
+                    </div>
+                </div>
+            <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+        <?php if(session()->has('error')): ?>
+                <div class="fixed bottom-4 right-4 left-4 z-50">
+                    <div class="bg-red-500 text-white px-4 py-3 rounded-md shadow-lg text-center">
+                        <?php echo e(session('error')); ?>
+
+                    </div>
+                </div>
+            <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+        <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+        </div>
+    </div>
+
+    <!-- Desktop View -->
+    <div class="hidden sm:block">
+        <div class="flex h-full w-full flex-1 flex-col gap-6 p-4 md:p-6 bg-base-100 text-base-content">
+            <!--[if BLOCK]><![endif]--><?php if($viewMode === 'categories'): ?>
+                <!-- Header -->
+                <div class="flex items-center justify-between">
+                    <div class="space-y-2">
+                        <h1 class="text-3xl font-bold text-accent">Pilih Kategori Task</h1>
+                        <p class="text-muted-foreground">Pilih kategori untuk melihat task yang tersedia</p>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <a href="<?php echo e(route('user.history')); ?>" class="inline-flex items-center gap-2 px-4 py-2 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-colors">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            Task History
+                        </a>
+                    </div>
+                </div>
+                <!-- Category Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                    <!--[if BLOCK]><![endif]--><?php $__empty_1 = true; $__currentLoopData = $categories; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $category): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
+                        <?php
+                            $isPremiumAdmin = $category->createdBy && $category->createdBy->badge === 'premium_admin';
+                        ?>
+                        <div 
+                            wire:click="selectCategory(<?php echo e($category->id); ?>)"
+                            wire:loading.class="opacity-50 cursor-wait"
+                            wire:target="selectCategory(<?php echo e($category->id); ?>)"
+                            class="bg-white dark:bg-zinc-800 rounded-xl border <?php echo e($isPremiumAdmin ? 'border-amber-400 dark:border-amber-500 ring-2 ring-amber-200 dark:ring-amber-900/50' : 'border-zinc-200 dark:border-zinc-700'); ?> p-6 hover:shadow-lg dark:hover:shadow-zinc-900/20 transition-all duration-200 cursor-pointer group hover:border-green-300 dark:hover:border-green-600 relative overflow-hidden">
+                            
+                            <!--[if BLOCK]><![endif]--><?php if($isPremiumAdmin): ?>
+                                <div class="absolute top-0 right-0">
+                                    <div class="bg-gradient-to-l from-amber-500 to-yellow-400 text-white text-xs font-bold px-4 py-1.5 rounded-bl-xl shadow-md">
+                                        ⭐ VIP ADMIN
+                                    </div>
+                                </div>
+                            <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+
+                            <div class="flex items-center gap-4">
+                                <?php
+                                    $words = explode(' ', trim($category->name));
+                                    $initials = count($words) >= 2 
+                                        ? strtoupper(substr($words[0], 0, 1) . substr($words[1], 0, 1))
+                                        : strtoupper(substr($category->name, 0, 2));
+                                ?>
+                                <div class="w-12 h-12 <?php echo e($isPremiumAdmin ? 'bg-gradient-to-br from-amber-400 to-yellow-500' : 'bg-gradient-to-br from-blue-500 to-purple-600'); ?> rounded-lg flex items-center justify-center text-white font-bold text-lg group-hover:scale-110 transition-transform duration-200 shadow-lg">
+                                    <?php echo e($initials); ?>
+
+                                </div>
+                                <div class="flex-1">
+                                    <h3 class="font-bold text-lg text-zinc-900 dark:text-white group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors">
+                                        <?php echo e($category->name); ?>
+
+                                    </h3>
+                                    <div class="flex items-center gap-2 text-sm">
+                                        <span class="text-zinc-600 dark:text-zinc-400"><?php echo e($category->available_tasks_count); ?> task tersedia</span>
+                                        <!--[if BLOCK]><![endif]--><?php if($category->in_progress_count > 0): ?>
+                                            <span class="text-amber-600 dark:text-amber-400">• <?php echo e($category->in_progress_count); ?> dikerjakan</span>
+                                        <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+                                    </div>
+                                </div>
+                                <div class="w-8 h-8 bg-zinc-100 dark:bg-zinc-700 rounded-full flex items-center justify-center group-hover:bg-green-100 dark:group-hover:bg-green-900 transition-colors">
+                                    <!-- Loading spinner -->
+                                    <svg wire:loading wire:target="selectCategory(<?php echo e($category->id); ?>)" style="display: none;" class="w-4 h-4 animate-spin text-green-600" fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                    <!-- Arrow icon -->
+                                    <svg wire:loading.remove wire:target="selectCategory(<?php echo e($category->id); ?>)" class="w-4 h-4 text-zinc-600 dark:text-zinc-400 group-hover:text-green-600 dark:group-hover:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                    </svg>
+                                </div>
+                            </div>
+
+                            <!-- Admin Info -->
+                            <!--[if BLOCK]><![endif]--><?php if($category->createdBy): ?>
+                                <div class="mt-4 flex items-center gap-2 text-sm <?php echo e($isPremiumAdmin ? 'text-amber-600 dark:text-amber-400' : 'text-zinc-500 dark:text-zinc-400'); ?>">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                                    <span>Admin: <strong><?php echo e($category->createdBy->name); ?></strong></span>
+                                    <!--[if BLOCK]><![endif]--><?php if($isPremiumAdmin): ?>
+                                        <span class="px-2 py-0.5 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded text-xs font-semibold">PREMIUM</span>
+                                    <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+                                </div>
+                            <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+
+                            <!--[if BLOCK]><![endif]--><?php if($category->description): ?>
+                                <p class="mt-3 text-sm text-zinc-600 dark:text-zinc-400 line-clamp-2">
+                                    <?php echo e($category->description); ?>
+
+                                </p>
+                            <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+                        </div>
+                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
+                        <div class="col-span-full">
+                            <div class="text-center py-12">
+                                <div class="w-24 h-24 bg-zinc-100 dark:bg-zinc-800 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <svg class="w-12 h-12 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                                    </svg>
+                                </div>
+                                <h3 class="text-lg font-medium text-zinc-900 dark:text-white mb-2">Tidak Ada Kategori Dengan Task Tersedia</h3>
+                                <p class="text-zinc-600 dark:text-zinc-400">Saat ini belum ada kategori yang memiliki task tersedia.</p>
+                            </div>
+                        </div>
+                    <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+                </div>
+            <?php else: ?>
+                <!-- Header for Tasks View -->
+                <div class="flex flex-col gap-4">
+                    <div class="flex items-center justify-between">
+                        <button wire:click="backToCategories" 
+                            wire:loading.class="opacity-50 cursor-wait"
+                            wire:target="backToCategories"
+                            class="inline-flex items-center gap-2 px-4 py-2 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-colors">
+                            <!-- Loading spinner -->
+                            <svg wire:loading wire:target="backToCategories" style="display: none;" class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            <!-- Back arrow -->
+                            <svg wire:loading.remove wire:target="backToCategories" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                            <span wire:loading.remove wire:target="backToCategories">Kembali ke Kategori</span>
+                            <span wire:loading wire:target="backToCategories" style="display: none;">Loading...</span>
+                        </button>
+                        <a href="<?php echo e(route('user.history')); ?>" class="inline-flex items-center gap-2 px-4 py-2 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-colors">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            Task History
+                        </a>
+                    </div>
+                    
+                    <!-- Category Title Card -->
+                    <div class="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 border border-green-200 dark:border-green-800 rounded-xl p-5">
+                        <h1 class="text-2xl font-bold text-zinc-900 dark:text-white text-center"><?php echo e($selectedCategoryName); ?></h1>
+                        <p class="text-zinc-600 dark:text-zinc-400 text-center mt-1">Task yang tersedia dalam kategori ini</p>
+                    </div>
+                </div>
+                <!-- Task Filters (only show when viewing tasks) -->
+                <div class="bg-white dark:bg-zinc-800 rounded-xl border border-zinc-200 dark:border-zinc-700 p-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Search -->
+                        <div>
+                            <label class="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">Cari Task</label>
+                            <input 
+                                type="text" 
+                                wire:model.live="search"
+                                placeholder="Cari task dalam kategori ini..."
+                                class="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-600 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 dark:bg-zinc-700 dark:text-white"
+                            />
+                        </div>
+                        <!-- Status Filter -->
+                        <div>
+                            <label class="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">Status</label>
+                            <select 
+                                wire:model.live="filter"
+                                class="w-full px-3 py-2 border border-zinc-300 dark:border-zinc-600 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 dark:bg-zinc-700 dark:text-white"
+                            >
+                                <option value="available">Task Tersedia</option>
+                                <option value="my_tasks">Task Saya (Dikerjakan)</option>
+                                <option value="completed">Task Selesai</option>
+                                <option value="failed">Task Gagal/Dibatalkan</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <!-- Tasks Grid (only show when viewing tasks) -->
+                <!--[if BLOCK]><![endif]--><?php if($viewMode === 'tasks'): ?>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!--[if BLOCK]><![endif]--><?php $__empty_1 = true; $__currentLoopData = $tasks; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $task): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
+                        <?php
+                            $userTask = $task->userTasks->where('user_id', auth()->id())->first();
+                        ?>
+                        <div class="bg-white dark:bg-zinc-800 rounded-xl border border-zinc-200 dark:border-zinc-700 p-6 space-y-4">
+                            <!-- Category Badge and Difficulty -->
+                            <div class="flex items-center justify-between">
+                                <span class="px-2 py-1 bg-green-100 text-blue-800 rounded text-xs font-medium">
+                                    <?php echo e($task->category->name); ?>
+
+                                </span>
+                                <span class="px-2 py-1 rounded text-xs font-medium
+                                           <?php if($task->difficulty_level === 'easy'): ?> bg-green-100 text-green-800
+                                           <?php elseif($task->difficulty_level === 'medium'): ?> bg-yellow-100 text-yellow-800
+                                           <?php else: ?> bg-red-100 text-red-800 <?php endif; ?>">
+                                    <?php echo e(ucfirst($task->difficulty_level)); ?>
+
+                                </span>
+                            </div>
+                            <!-- Task Title -->
+                            <h3 class="text-lg font-semibold text-zinc-900 dark:text-white line-clamp-2">
+                                <?php echo e($task->title); ?>
+
+                            </h3>
+                            <!-- Task Description -->
+                            <p class="text-zinc-600 dark:text-zinc-400 line-clamp-3">
+                                <?php echo e(Str::limit(strip_tags($task->description), 100)); ?>
+
+                            </p>
+                            <!-- Admin Info -->
+                            <div class="flex items-center gap-2 p-2 bg-zinc-50 dark:bg-zinc-700/50 rounded-lg">
+                                <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                                    <span class="text-white text-xs font-bold"><?php echo e(substr($task->creator->name ?? 'A', 0, 1)); ?></span>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-sm font-medium text-zinc-900 dark:text-white truncate">
+                                        <?php echo e($task->creator->name ?? 'Admin'); ?>
+
+                                    </p>
+                                    <!--[if BLOCK]><![endif]--><?php if($task->creator && $task->creator->badge === 'premium_admin'): ?>
+                                        <span class="inline-flex items-center gap-1 px-1.5 py-0.5 bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-300 rounded text-xs font-medium">
+                                            <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
+                                            Premium
+                                        </span>
+                                    <?php else: ?>
+                                        <span class="text-xs text-zinc-500 dark:text-zinc-400">Admin</span>
+                                    <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+                                </div>
+                            </div>
+                            <!-- Estimasi Nominal -->
+                            <!--[if BLOCK]><![endif]--><?php if($task->estimated_amount): ?>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-sm text-zinc-500 dark:text-zinc-400">💰 Estimasi:</span>
+                                    <span class="text-base font-bold text-green-600 dark:text-green-400">
+                                        Rp <?php echo e(number_format($task->estimated_amount, 0, ',', '.')); ?>
+
+                                    </span>
+                                </div>
+                            <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+                            <!-- UserTask Status (untuk my_tasks, completed, failed) -->
+                            <!--[if BLOCK]><![endif]--><?php if($userTask && in_array($filter, ['my_tasks', 'completed', 'failed'])): ?>
+                                <div class="border-t border-zinc-200 dark:border-zinc-700 pt-4 space-y-3">
+                                    <!-- Status Badge -->
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-sm font-medium text-zinc-700 dark:text-zinc-300">Status:</span>
+                                        <span class="px-3 py-1 rounded-full text-xs font-semibold
+                                                   <?php if($userTask->isOverdue()): ?> bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200
+                                                   <?php elseif($userTask->status === 'taken'): ?> bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200
+                                                   <?php elseif($userTask->status === 'pending_verification_1'): ?> bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200
+                                                   <?php elseif($userTask->status === 'pending_verification_2'): ?> bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200
+                                                   <?php elseif($userTask->status === 'completed'): ?> bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200
+                                                   <?php elseif($userTask->status === 'failed'): ?> bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200
+                                                   <?php elseif($userTask->status === 'cancelled'): ?> bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200
+                                                   <?php else: ?> bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200 <?php endif; ?>">
+                                            <?php echo e($userTask->isOverdue() ? 'Gagal (Kadaluarsa)' : \App\Models\UserTask::STATUSES[$userTask->status]); ?>
+
+                                        </span>
+                                    </div>
+                                    <!-- Payment Info (untuk completed) -->
+                                    <!--[if BLOCK]><![endif]--><?php if($userTask->status === 'completed'): ?>
+                                        <div class="flex items-center justify-between">
+                                            <span class="text-sm font-medium text-zinc-700 dark:text-zinc-300">Payment:</span>
+                                            <div class="text-right">
+                                                <div class="px-3 py-1 rounded-full text-xs font-semibold
+                                                           <?php if($userTask->payment_status === 'success'): ?> bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200
+                                                           <?php elseif($userTask->payment_status === 'failed'): ?> bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200
+                                                           <?php else: ?> bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200 <?php endif; ?>">
+                                                    <?php echo e(\App\Models\UserTask::PAYMENT_STATUSES[$userTask->payment_status]); ?>
+
+                                                </div>
+                                                <!--[if BLOCK]><![endif]--><?php if($userTask->payment_amount): ?>
+                                                    <div class="text-sm font-bold text-green-600 dark:text-green-400 mt-1">
+                                                        Rp <?php echo e(number_format($userTask->payment_amount, 0, ',', '.')); ?>
+
+                                                    </div>
+                                                <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+                                            </div>
+                                        </div>
+                                    <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+                                    <!-- Deadline Info -->
+                                    <!--[if BLOCK]><![endif]--><?php if($userTask->deadline_at): ?>
+                                        <div class="flex items-center justify-between">
+                                            <span class="text-sm font-medium text-zinc-700 dark:text-zinc-300">Deadline:</span>
+                                            <span class="text-sm <?php echo e($userTask->isOverdue() ? 'text-red-600 dark:text-red-400 font-bold' : 'text-zinc-600 dark:text-zinc-400'); ?>">
+                                                <?php echo e($userTask->deadline_at->format('d M Y H:i')); ?>
+
+                                                <!--[if BLOCK]><![endif]--><?php if($userTask->isOverdue()): ?>
+                                                    <span class="text-xs">(Overdue)</span>
+                                                <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+                                            </span>
+                                        </div>
+                                    <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+                                    <!-- Failed Count (untuk failed) -->
+                                    <!--[if BLOCK]><![endif]--><?php if($userTask->status === 'failed' && $userTask->failed_count > 0): ?>
+                                        <div class="flex items-center justify-between">
+                                            <span class="text-sm font-medium text-zinc-700 dark:text-zinc-300">Failed Attempts:</span>
+                                            <span class="text-sm text-red-600 dark:text-red-400 font-bold"><?php echo e($userTask->failed_count); ?>x</span>
+                                        </div>
+                                    <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+                                </div>
+                            <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+                            <!-- Task Info (untuk available tasks) -->
+                            <!--[if BLOCK]><![endif]--><?php if($filter === 'available'): ?>
+                                <div class="space-y-2">
+                                    <div class="flex items-center text-sm text-zinc-600 dark:text-zinc-400">
+                                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                        </svg>
+                                        Expired: <?php echo e($task->expired_at->format('d M Y H:i')); ?>
+
+                                    </div>
+                                    <div class="flex items-center text-sm text-zinc-600 dark:text-zinc-400">
+                                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283-.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                                        </svg>
+                                        <span class="font-semibold"><?php echo e($task->activeUserTask->count() ?? 0); ?></span>
+                                        <span class="ml-1">sedang dikerjakan</span>
+                                    </div>
+                                </div>
+                            <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+                            <!-- Action Button -->
+                            <!--[if BLOCK]><![endif]--><?php if($filter === 'available'): ?>
+                                <!--[if BLOCK]><![endif]--><?php if($task->isTaken()): ?>
+                                    <button disabled class="w-full px-4 py-2 bg-gray-300 text-gray-500 rounded-md cursor-not-allowed">
+                                        Sudah Diambil
+                                    </button>
+                                <?php elseif($task->isExpired()): ?>
+                                    <button disabled class="w-full px-4 py-2 bg-gray-300 text-gray-500 rounded-md cursor-not-allowed">
+                                        Task Expired
+                                    </button>
+                                <?php else: ?>
+                                    <button 
+                                        wire:click="takeTask(<?php echo e($task->id); ?>)" 
+                                        wire:loading.attr="disabled"
+                                        wire:loading.class="opacity-50 cursor-wait"
+                                        wire:target="takeTask(<?php echo e($task->id); ?>)"
+                                        class="w-full px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors flex items-center justify-center gap-2">
+                                        <svg wire:loading wire:target="takeTask(<?php echo e($task->id); ?>)" style="display: none;" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                                        <span wire:loading.remove wire:target="takeTask(<?php echo e($task->id); ?>)">Ambil Task</span>
+                                        <span wire:loading wire:target="takeTask(<?php echo e($task->id); ?>)" style="display: none;">Memproses...</span>
+                                    </button>
+                                <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+                            <?php elseif($filter === 'my_tasks'): ?>
+                                <a 
+                                    href="<?php echo e(route('user.task.work', $task->id)); ?>" 
+                                    class="block w-full px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors text-center">
+                                    Lanjutkan Pengerjaan
+                                </a>
+                            <?php elseif($filter === 'completed'): ?>
+                                <a 
+                                    href="<?php echo e(route('user.task.work', $task->id)); ?>" 
+                                    class="block w-full px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors text-center">
+                                    Lihat Status & Detail
+                                </a>
+                            <?php elseif($filter === 'failed'): ?>
+                                <div class="space-y-2">
+                                    <!--[if BLOCK]><![endif]--><?php if($userTask->status === 'failed'): ?>
+                                        <a 
+                                            href="<?php echo e(route('user.task.work', $task->id)); ?>" 
+                                            class="block w-full px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 transition-colors text-center">
+                                            Lihat Detail Kegagalan
+                                        </a>
+                                    <?php elseif($userTask->status === 'cancelled'): ?>
+                                        <div class="text-gray-600 dark:text-gray-400 font-medium text-center py-2">
+                                            Task Dibatalkan
+                                        </div>
+                                    <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+                                </div>
+                            <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+                        </div>
+                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
+                        <div class="col-span-full">
+                            <div class="bg-white dark:bg-zinc-800 rounded-xl border border-zinc-200 dark:border-zinc-700 text-center py-12">
+                                <svg class="w-16 h-16 text-zinc-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                </svg>
+                                <h3 class="text-lg font-semibold text-zinc-900 dark:text-white mb-2">Tidak ada task ditemukan</h3>
+                                <p class="text-zinc-600 dark:text-zinc-400">Coba ubah filter atau kata kunci pencarian</p>
+                            </div>
+                        </div>
+                    <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+                </div>
+                <!-- Pagination -->
+                <!--[if BLOCK]><![endif]--><?php if($tasks->hasPages()): ?>
+                    <div class="flex justify-center">
+                        <?php echo e($tasks->links()); ?>
+
+                    </div>
+                <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+        <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+            <!-- Flash Messages -->
+            <!--[if BLOCK]><![endif]--><?php if(session()->has('success')): ?>
+                <div class="fixed bottom-4 right-4 z-50">
+                    <div class="bg-green-500 text-white px-6 py-3 rounded-md shadow-lg">
+                        <?php echo e(session('success')); ?>
+
+                    </div>
+                </div>
+            <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+        <?php if(session()->has('error')): ?>
+                <div class="fixed bottom-4 right-4 z-50">
+                    <div class="bg-red-500 text-white px-6 py-3 rounded-md shadow-lg">
+                        <?php echo e(session('error')); ?>
+
+                    </div>
+                </div>
+            <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+        <?php endif; ?><!--[if ENDBLOCK]><![endif]-->
+        </div>
+    </div>
+
+    <style>
+        .line-clamp-2 {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .line-clamp-3 {
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+    </style>
+</div>
+<?php /**PATH C:\laragon\www\template_design\resources\views/livewire/task-dashboard.blade.php ENDPATH**/ ?>
