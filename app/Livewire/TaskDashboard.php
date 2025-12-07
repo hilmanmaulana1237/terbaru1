@@ -18,6 +18,18 @@ class TaskDashboard extends Component
     public $search = '';
     public $filter = 'available'; // available, my_tasks, completed, failed
     public $viewMode = 'categories'; // categories, tasks
+    
+    // Weekly warning modal properties
+    public $showWeeklyWarningModal = false;
+    public $pendingTaskId = null;
+    public $lastTaskDate = null;
+    public $daysSinceLastTask = null;
+    
+    // Weekly warning modal properties
+    public $showWeeklyWarningModal = false;
+    public $pendingTaskId = null;
+    public $lastTaskDate = null;
+    public $daysSinceLastTask = null
 
     public function mount()
     {
@@ -94,6 +106,51 @@ class TaskDashboard extends Component
             session()->flash('error', $user->getCannotTakeTaskReason() ?? 'Anda tidak diperbolehkan mengambil task.');
             return;
         }
+
+        // Check weekly limit - get last completed task
+        $lastCompletedTask = UserTask::where('user_id', Auth::id())
+            ->where('status', UserTask::STATUS_COMPLETED)
+            ->orderBy('completed_at', 'desc')
+            ->first();
+
+        if ($lastCompletedTask && $lastCompletedTask->completed_at) {
+            $daysSince = now()->diffInDays($lastCompletedTask->completed_at);
+            
+            // If less than 7 days, show warning modal
+            if ($daysSince < 7) {
+                $this->pendingTaskId = $taskId;
+                $this->lastTaskDate = $lastCompletedTask->completed_at->format('d M Y, H:i');
+                $this->daysSinceLastTask = $daysSince === 0 
+                    ? 'Hari ini' 
+                    : $daysSince . ' hari yang lalu (' . (7 - $daysSince) . ' hari lagi)';
+                $this->showWeeklyWarningModal = true;
+                return;
+            }
+        }
+
+        // Proceed with normal task taking
+        $this->proceedTakeTask($taskId);
+    }
+
+    public function confirmTakeTask()
+    {
+        if ($this->pendingTaskId) {
+            $this->proceedTakeTask($this->pendingTaskId);
+            $this->cancelTakeTask();
+        }
+    }
+
+    public function cancelTakeTask()
+    {
+        $this->showWeeklyWarningModal = false;
+        $this->pendingTaskId = null;
+        $this->lastTaskDate = null;
+        $this->daysSinceLastTask = null;
+    }
+
+    private function proceedTakeTask($taskId)
+    {
+        $user = Auth::user();
 
         // Check if user already has an active task in "taken" status
         // Users can take new tasks while waiting for admin approval on submitted proofs

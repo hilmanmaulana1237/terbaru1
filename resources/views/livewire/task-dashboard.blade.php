@@ -794,6 +794,127 @@
         </div>
     </div>
 
+    <!-- Weekly Task Warning Modal -->
+    @if($showWeeklyWarningModal)
+    <!-- Overlay -->
+    <div class="fixed inset-0 z-40 bg-black/70" wire:click="cancelTakeTask"></div>
+    
+    <!-- Modal -->
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4">
+        <div class="bg-white dark:bg-zinc-800 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
+            <!-- Header with Warning Icon -->
+            <div class="bg-gradient-to-r from-amber-500 to-orange-500 px-4 py-4 sm:px-6 sm:py-5">
+                <div class="flex items-center gap-3">
+                    <div class="flex-shrink-0 flex items-center justify-center h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-white/20 backdrop-blur">
+                        <svg class="h-6 w-6 sm:h-7 sm:w-7 text-white" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-lg sm:text-xl font-bold text-white">
+                            Peringatan Spam WhatsApp
+                        </h3>
+                        <p class="text-amber-100 text-xs sm:text-sm">Lindungi akun WhatsApp Anda</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Content -->
+            <div class="px-4 py-4 sm:px-6 sm:py-5 space-y-4">
+                <!-- Last Task Info -->
+                <div class="bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-700 rounded-xl p-3 sm:p-4">
+                    <div class="flex items-start gap-3">
+                        <div class="flex-shrink-0 mt-0.5">
+                            <svg class="w-5 h-5 text-amber-600 dark:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <p class="text-xs sm:text-sm text-amber-700 dark:text-amber-300 font-medium">Task terakhir diambil:</p>
+                            <p class="text-base sm:text-lg font-bold text-amber-800 dark:text-amber-200">{{ $lastTaskDate }}</p>
+                            <p class="text-xs text-amber-600 dark:text-amber-400 mt-0.5">{{ $daysSinceLastTask }}</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Warning Message -->
+                <div class="space-y-3">
+                    <p class="text-sm text-zinc-600 dark:text-zinc-400">
+                        Untuk menghindari akun WhatsApp dianggap <span class="font-bold text-red-600 dark:text-red-400">SPAM</span>:
+                    </p>
+                    
+                    <div class="bg-zinc-50 dark:bg-zinc-700/50 rounded-xl p-3 sm:p-4">
+                        <ul class="text-sm text-zinc-700 dark:text-zinc-300 space-y-2">
+                            <li class="flex items-start gap-2">
+                                <span class="flex-shrink-0 w-5 h-5 rounded-full bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center text-blue-600 dark:text-blue-400 text-xs font-bold">1</span>
+                                <span>Maksimal <strong>1 task per minggu</strong> per akun WA</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <span class="flex-shrink-0 w-5 h-5 rounded-full bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center text-blue-600 dark:text-blue-400 text-xs font-bold">2</span>
+                                <span>Tunggu minimal <strong>7 hari</strong> sebelum task baru</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <!-- Tip -->
+                <div class="bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-700 rounded-xl p-3 sm:p-4">
+                    <div class="flex items-start gap-2">
+                        <span class="text-lg">💡</span>
+                        <p class="text-xs sm:text-sm text-green-700 dark:text-green-300">
+                            <strong>Tips:</strong> Gunakan <strong>akun WhatsApp berbeda</strong> jika ingin melanjutkan sekarang.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Buttons -->
+            <div class="bg-zinc-100 dark:bg-zinc-900 px-4 py-4 sm:px-6 flex flex-col gap-2 sm:gap-3">
+                <button 
+                    wire:click="confirmTakeTask" 
+                    wire:loading.attr="disabled"
+                    wire:loading.class="opacity-50 cursor-wait"
+                    wire:target="confirmTakeTask"
+                    type="button" 
+                    class="w-full inline-flex justify-center items-center gap-2 rounded-xl px-4 py-3 bg-green-600 text-white font-semibold hover:bg-green-700 active:bg-green-800 transition-colors text-sm sm:text-base"
+                >
+                    <!-- Loading spinner -->
+                    <svg wire:loading wire:target="confirmTakeTask" style="display: none;" class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <!-- Check icon -->
+                    <svg wire:loading.remove wire:target="confirmTakeTask" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                    <span wire:loading.remove wire:target="confirmTakeTask">Ya, Saya Pakai Akun WA Baru</span>
+                    <span wire:loading wire:target="confirmTakeTask" style="display: none;">Memproses...</span>
+                </button>
+                <button 
+                    wire:click="cancelTakeTask" 
+                    wire:loading.attr="disabled"
+                    wire:loading.class="opacity-50 cursor-wait"
+                    wire:target="cancelTakeTask"
+                    type="button" 
+                    class="w-full inline-flex justify-center items-center gap-2 rounded-xl px-4 py-3 bg-white dark:bg-zinc-800 border-2 border-zinc-200 dark:border-zinc-600 text-zinc-700 dark:text-zinc-300 font-semibold hover:bg-zinc-50 dark:hover:bg-zinc-700 active:bg-zinc-100 transition-colors text-sm sm:text-base"
+                >
+                    <!-- Loading spinner -->
+                    <svg wire:loading wire:target="cancelTakeTask" style="display: none;" class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <!-- X icon -->
+                    <svg wire:loading.remove wire:target="cancelTakeTask" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                    <span wire:loading.remove wire:target="cancelTakeTask">Batal, Tunggu Minggu Depan</span>
+                    <span wire:loading wire:target="cancelTakeTask" style="display: none;">Menutup...</span>
+                </button>
+            </div>
+        </div>
+    </div>
+    @endif
+
     <style>
         .line-clamp-2 {
             display: -webkit-box;
