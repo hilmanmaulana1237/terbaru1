@@ -18,7 +18,7 @@ class TaskDashboard extends Component
     public $search = '';
     public $filter = 'available'; // available, my_tasks, completed, failed
     public $viewMode = 'categories'; // categories, tasks
-    
+
     // Weekly warning modal properties
     public $showWeeklyWarningModal = false;
     public $pendingTaskId = null;
@@ -108,14 +108,14 @@ class TaskDashboard extends Component
             ->first();
 
         if ($lastCompletedTask && $lastCompletedTask->completed_at) {
-            $daysSince = now()->diffInDays($lastCompletedTask->completed_at);
-            
+            $daysSince = (int) abs(now()->diffInDays($lastCompletedTask->completed_at));
+
             // If less than 7 days, show warning modal
             if ($daysSince < 7) {
                 $this->pendingTaskId = $taskId;
                 $this->lastTaskDate = $lastCompletedTask->completed_at->format('d M Y, H:i');
-                $this->daysSinceLastTask = $daysSince === 0 
-                    ? 'Hari ini' 
+                $this->daysSinceLastTask = $daysSince === 0
+                    ? 'Hari ini'
                     : $daysSince . ' hari yang lalu (' . (7 - $daysSince) . ' hari lagi)';
                 $this->showWeeklyWarningModal = true;
                 return;
@@ -394,6 +394,14 @@ class TaskDashboard extends Component
         $selectedCategoryName = $this->selectedCategory ? Category::find($this->selectedCategory)?->name : null;
         $selectedCategoryAdmin = $this->selectedCategory ? Category::with('createdBy')->find($this->selectedCategory)?->createdBy : null;
 
-        return view('livewire.task-dashboard', compact('tasks', 'categories', 'selectedCategoryName', 'selectedCategoryAdmin'));
+        return view('livewire.task-dashboard', [
+            'tasks' => $tasks,
+            'categories' => $categories,
+            'selectedCategoryName' => $selectedCategoryName,
+            'selectedCategoryAdmin' => $selectedCategoryAdmin,
+            'showWeeklyWarningModal' => $this->showWeeklyWarningModal,
+            'lastTaskDate' => $this->lastTaskDate,
+            'daysSinceLastTask' => $this->daysSinceLastTask,
+        ]);
     }
 }
