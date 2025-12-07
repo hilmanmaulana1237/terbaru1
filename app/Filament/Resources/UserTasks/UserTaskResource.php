@@ -320,66 +320,66 @@ class UserTaskResource extends Resource
                             fn(UserTask $record) =>
                             $record->verification_1_status || $record->verification_2_status
                         )
-                    ->modalHeading(fn(UserTask $record) => 'Proof Details - Task #' . $record->id)
-                    ->modalContent(function (UserTask $record) {
-                        $content = '<div class="space-y-4 p-2">';
+                        ->modalHeading(fn(UserTask $record) => 'Proof Details - Task #' . $record->id)
+                        ->modalContent(function (UserTask $record) {
+                            $content = '<div class="space-y-4 p-2">';
 
-                        // Helper function to check if file is image
-                        $isImage = function ($filename) {
-                            $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
-                            return in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'svg']);
-                        };
+                            // Helper function to check if file is image
+                            $isImage = function ($filename) {
+                                $ext = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
+                                return in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'svg']);
+                            };
 
-                        // Helper function to parse verification status
-                        $parseProofStatus = function ($status, $filesJson) {
-                            if (!$status) {
-                                return [
-                                    'submitted' => false,
+                            // Helper function to parse verification status
+                            $parseProofStatus = function ($status, $filesJson) {
+                                if (!$status) {
+                                    return [
+                                        'submitted' => false,
+                                        'submittedAt' => null,
+                                        'files' => [],
+                                        'description' => null,
+                                        'approved' => false,
+                                        'rejected' => false,
+                                        'feedback' => null
+                                    ];
+                                }
+
+                                $data = [
+                                    'submitted' => str_contains($status, 'Submitted at'),
+                                    'approved' => str_contains($status, 'Approved by admin'),
+                                    'rejected' => str_contains($status, 'Rejected by admin'),
                                     'submittedAt' => null,
                                     'files' => [],
                                     'description' => null,
-                                    'approved' => false,
-                                    'rejected' => false,
                                     'feedback' => null
                                 ];
-                            }
 
-                            $data = [
-                                'submitted' => str_contains($status, 'Submitted at'),
-                                'approved' => str_contains($status, 'Approved by admin'),
-                                'rejected' => str_contains($status, 'Rejected by admin'),
-                                'submittedAt' => null,
-                                'files' => [],
-                                'description' => null,
-                                'feedback' => null
-                            ];
+                                // Parse submitted proof
+                                if (preg_match('/Submitted at ([\d\-: ]+)/', $status, $matches)) {
+                                    $data['submittedAt'] = $matches[1];
+                                }
 
-                            // Parse submitted proof
-                            if (preg_match('/Submitted at ([\d\-: ]+)/', $status, $matches)) {
-                                $data['submittedAt'] = $matches[1];
-                            }
+                                // Read files from verification_x_files column
+                                // Laravel Model Cast already decodes JSON to array
+                                if ($filesJson) {
+                                    $data['files'] = is_array($filesJson) ? $filesJson : json_decode($filesJson, true) ?? [];
+                                }
 
-                            // Read files from verification_x_files column
-                            // Laravel Model Cast already decodes JSON to array
-                            if ($filesJson) {
-                                $data['files'] = is_array($filesJson) ? $filesJson : json_decode($filesJson, true) ?? [];
-                            }
+                                // Parse description
+                                if (preg_match('/Description: ([^-]+?)(?:\s*-\s*(?:Approved|Rejected)|$)/', $status, $matches)) {
+                                    $data['description'] = trim($matches[1]);
+                                }
 
-                            // Parse description
-                            if (preg_match('/Description: ([^-]+?)(?:\s*-\s*(?:Approved|Rejected)|$)/', $status, $matches)) {
-                                $data['description'] = trim($matches[1]);
-                            }
+                                // Parse rejection reason
+                                if (preg_match('/Rejected by admin at [\d\-: ]+\. Reason: (.+)/', $status, $matches)) {
+                                    $data['feedback'] = $matches[1];
+                                }
 
-                            // Parse rejection reason
-                            if (preg_match('/Rejected by admin at [\d\-: ]+\. Reason: (.+)/', $status, $matches)) {
-                                $data['feedback'] = $matches[1];
-                            }
+                                return $data;
+                            };
 
-                            return $data;
-                        };
-
-                        // Add lightbox script and styles
-                        $content .= '<style>
+                            // Add lightbox script and styles
+                            $content .= '<style>
                             .proof-image-thumbnail { 
                                 cursor: pointer; 
                                 transition: transform 0.2s; 
@@ -427,12 +427,12 @@ class UserTaskResource extends Resource
                             }
                         </style>';
 
-                        $content .= '<div id="lightbox" class="lightbox-overlay" onclick="closeLightbox()">
+                            $content .= '<div id="lightbox" class="lightbox-overlay" onclick="closeLightbox()">
                             <span class="lightbox-close">&times;</span>
                             <img id="lightbox-img" class="lightbox-image" src="" alt="Full size image">
                         </div>';
 
-                        $content .= '<script>
+                            $content .= '<script>
                             function openLightbox(src) {
                                 document.getElementById("lightbox").classList.add("active");
                                 document.getElementById("lightbox-img").src = src;
@@ -446,421 +446,421 @@ class UserTaskResource extends Resource
                             });
                         </script>';
 
-                        // PROOF 1
-                        if ($record->verification_1_status) {
-                            $proof1 = $parseProofStatus($record->verification_1_status, $record->verification_1_files);
+                            // PROOF 1
+                            if ($record->verification_1_status) {
+                                $proof1 = $parseProofStatus($record->verification_1_status, $record->verification_1_files);
 
-                            $content .= '<div class="border rounded-lg p-4 bg-gray-50 dark:bg-gray-800">';
-                            $content .= '<div class="flex items-center justify-between mb-3">';
-                            $content .= '<h3 class="font-bold text-lg text-gray-900 dark:text-white">📄 Proof 1</h3>';
+                                $content .= '<div class="border rounded-lg p-4 bg-gray-50 dark:bg-gray-800">';
+                                $content .= '<div class="flex items-center justify-between mb-3">';
+                                $content .= '<h3 class="font-bold text-lg text-gray-900 dark:text-white">📄 Proof 1</h3>';
 
-                            if ($proof1['approved']) {
-                                $content .= '<span class="px-3 py-1 bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 rounded-full text-xs font-semibold">✓ Approved</span>';
-                            } elseif ($proof1['rejected']) {
-                                $content .= '<span class="px-3 py-1 bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200 rounded-full text-xs font-semibold">✗ Rejected</span>';
-                            } elseif ($proof1['submitted']) {
-                                $content .= '<span class="px-3 py-1 bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200 rounded-full text-xs font-semibold">⏳ Pending Review</span>';
-                            }
+                                if ($proof1['approved']) {
+                                    $content .= '<span class="px-3 py-1 bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 rounded-full text-xs font-semibold">✓ Approved</span>';
+                                } elseif ($proof1['rejected']) {
+                                    $content .= '<span class="px-3 py-1 bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200 rounded-full text-xs font-semibold">✗ Rejected</span>';
+                                } elseif ($proof1['submitted']) {
+                                    $content .= '<span class="px-3 py-1 bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200 rounded-full text-xs font-semibold">⏳ Pending Review</span>';
+                                }
 
-                            $content .= '</div>';
+                                $content .= '</div>';
 
-                            if ($proof1['submittedAt']) {
-                                $content .= '<p class="text-sm text-gray-600 dark:text-gray-400 mb-2"><strong>Submitted:</strong> ' . $proof1['submittedAt'] . '</p>';
-                            }
+                                if ($proof1['submittedAt']) {
+                                    $content .= '<p class="text-sm text-gray-600 dark:text-gray-400 mb-2"><strong>Submitted:</strong> ' . $proof1['submittedAt'] . '</p>';
+                                }
 
-                            if (!empty($proof1['files'])) {
-                                $content .= '<div class="mb-3"><strong class="text-sm text-gray-700 dark:text-gray-300 block mb-2">Uploaded Files:</strong>';
-                                $content .= '<div class="grid grid-cols-2 md:grid-cols-3 gap-3">';
+                                if (!empty($proof1['files'])) {
+                                    $content .= '<div class="mb-3"><strong class="text-sm text-gray-700 dark:text-gray-300 block mb-2">Uploaded Files:</strong>';
+                                    $content .= '<div class="grid grid-cols-2 md:grid-cols-3 gap-3">';
 
-                                foreach ($proof1['files'] as $file) {
-                                    $filePath = trim($file);
-                                    $fileUrl = \Storage::url($filePath);
+                                    foreach ($proof1['files'] as $file) {
+                                        $filePath = trim($file);
+                                        $fileUrl = \Storage::url($filePath);
 
-                                    if ($isImage($filePath)) {
-                                        // Image preview with lightbox
-                                        $content .= '<div class="relative group">';
-                                        $content .= '<img src="' . $fileUrl . '" 
+                                        if ($isImage($filePath)) {
+                                            // Image preview with lightbox
+                                            $content .= '<div class="relative group">';
+                                            $content .= '<img src="' . $fileUrl . '" 
                                                     alt="Proof image" 
                                                     class="proof-image-thumbnail w-full h-32 border-2 border-gray-300 dark:border-gray-600"
                                                     onclick="openLightbox(\'' . $fileUrl . '\')"
                                                     loading="lazy">';
-                                        $content .= '<div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all rounded-lg flex items-center justify-center">';
-                                        $content .= '<span class="text-white opacity-0 group-hover:opacity-100 text-sm font-semibold">🔍 Click to enlarge</span>';
-                                        $content .= '</div>';
-                                        $content .= '</div>';
-                                    } else {
-                                        // Non-image file link
-                                        $fileName = basename($filePath);
-                                        $content .= '<a href="' . $fileUrl . '" target="_blank" class="flex items-center gap-2 p-2 border rounded bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">';
-                                        $content .= '<svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>';
-                                        $content .= '<span class="text-xs text-blue-600 dark:text-blue-400 truncate">' . htmlspecialchars($fileName) . '</span>';
-                                        $content .= '</a>';
+                                            $content .= '<div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all rounded-lg flex items-center justify-center">';
+                                            $content .= '<span class="text-white opacity-0 group-hover:opacity-100 text-sm font-semibold">🔍 Click to enlarge</span>';
+                                            $content .= '</div>';
+                                            $content .= '</div>';
+                                        } else {
+                                            // Non-image file link
+                                            $fileName = basename($filePath);
+                                            $content .= '<a href="' . $fileUrl . '" target="_blank" class="flex items-center gap-2 p-2 border rounded bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">';
+                                            $content .= '<svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>';
+                                            $content .= '<span class="text-xs text-blue-600 dark:text-blue-400 truncate">' . htmlspecialchars($fileName) . '</span>';
+                                            $content .= '</a>';
+                                        }
                                     }
+
+                                    $content .= '</div></div>';
                                 }
 
-                                $content .= '</div></div>';
-                            }
+                                if ($proof1['description']) {
+                                    $content .= '<div class="mb-2 mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded"><strong class="text-sm text-gray-700 dark:text-gray-300">User Description:</strong>';
+                                    $content .= '<p class="text-sm text-gray-600 dark:text-gray-400 mt-1 italic">"' . nl2br(htmlspecialchars($proof1['description'])) . '"</p></div>';
+                                }
 
-                            if ($proof1['description']) {
-                                $content .= '<div class="mb-2 mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded"><strong class="text-sm text-gray-700 dark:text-gray-300">User Description:</strong>';
-                                $content .= '<p class="text-sm text-gray-600 dark:text-gray-400 mt-1 italic">"' . nl2br(htmlspecialchars($proof1['description'])) . '"</p></div>';
-                            }
+                                if ($proof1['feedback']) {
+                                    $content .= '<div class="mt-3 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded">';
+                                    $content .= '<strong class="text-sm text-red-700 dark:text-red-400">Rejection Reason:</strong>';
+                                    $content .= '<p class="text-sm text-red-600 dark:text-red-300 mt-1">' . htmlspecialchars($proof1['feedback']) . '</p>';
+                                    $content .= '</div>';
+                                }
 
-                            if ($proof1['feedback']) {
-                                $content .= '<div class="mt-3 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded">';
-                                $content .= '<strong class="text-sm text-red-700 dark:text-red-400">Rejection Reason:</strong>';
-                                $content .= '<p class="text-sm text-red-600 dark:text-red-300 mt-1">' . htmlspecialchars($proof1['feedback']) . '</p>';
                                 $content .= '</div>';
                             }
 
-                            $content .= '</div>';
-                        }
+                            // PROOF 2
+                            if ($record->verification_2_status) {
+                                $proof2 = $parseProofStatus($record->verification_2_status, $record->verification_2_files);
 
-                        // PROOF 2
-                        if ($record->verification_2_status) {
-                            $proof2 = $parseProofStatus($record->verification_2_status, $record->verification_2_files);
+                                $content .= '<div class="border rounded-lg p-4 bg-gray-50 dark:bg-gray-800">';
+                                $content .= '<div class="flex items-center justify-between mb-3">';
+                                $content .= '<h3 class="font-bold text-lg text-gray-900 dark:text-white">📄 Proof 2</h3>';
 
-                            $content .= '<div class="border rounded-lg p-4 bg-gray-50 dark:bg-gray-800">';
-                            $content .= '<div class="flex items-center justify-between mb-3">';
-                            $content .= '<h3 class="font-bold text-lg text-gray-900 dark:text-white">📄 Proof 2</h3>';
+                                if ($proof2['approved']) {
+                                    $content .= '<span class="px-3 py-1 bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 rounded-full text-xs font-semibold">✓ Approved</span>';
+                                } elseif ($proof2['rejected']) {
+                                    $content .= '<span class="px-3 py-1 bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200 rounded-full text-xs font-semibold">✗ Rejected</span>';
+                                } elseif ($proof2['submitted']) {
+                                    $content .= '<span class="px-3 py-1 bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200 rounded-full text-xs font-semibold">⏳ Pending Review</span>';
+                                }
 
-                            if ($proof2['approved']) {
-                                $content .= '<span class="px-3 py-1 bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 rounded-full text-xs font-semibold">✓ Approved</span>';
-                            } elseif ($proof2['rejected']) {
-                                $content .= '<span class="px-3 py-1 bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200 rounded-full text-xs font-semibold">✗ Rejected</span>';
-                            } elseif ($proof2['submitted']) {
-                                $content .= '<span class="px-3 py-1 bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200 rounded-full text-xs font-semibold">⏳ Pending Review</span>';
-                            }
+                                $content .= '</div>';
 
-                            $content .= '</div>';
+                                if ($proof2['submittedAt']) {
+                                    $content .= '<p class="text-sm text-gray-600 dark:text-gray-400 mb-2"><strong>Submitted:</strong> ' . $proof2['submittedAt'] . '</p>';
+                                }
 
-                            if ($proof2['submittedAt']) {
-                                $content .= '<p class="text-sm text-gray-600 dark:text-gray-400 mb-2"><strong>Submitted:</strong> ' . $proof2['submittedAt'] . '</p>';
-                            }
+                                if (!empty($proof2['files'])) {
+                                    $content .= '<div class="mb-3"><strong class="text-sm text-gray-700 dark:text-gray-300 block mb-2">Uploaded Files:</strong>';
+                                    $content .= '<div class="grid grid-cols-2 md:grid-cols-3 gap-3">';
 
-                            if (!empty($proof2['files'])) {
-                                $content .= '<div class="mb-3"><strong class="text-sm text-gray-700 dark:text-gray-300 block mb-2">Uploaded Files:</strong>';
-                                $content .= '<div class="grid grid-cols-2 md:grid-cols-3 gap-3">';
+                                    foreach ($proof2['files'] as $file) {
+                                        $filePath = trim($file);
+                                        $fileUrl = \Storage::url($filePath);
 
-                                foreach ($proof2['files'] as $file) {
-                                    $filePath = trim($file);
-                                    $fileUrl = \Storage::url($filePath);
-
-                                    if ($isImage($filePath)) {
-                                        // Image preview with lightbox
-                                        $content .= '<div class="relative group">';
-                                        $content .= '<img src="' . $fileUrl . '" 
+                                        if ($isImage($filePath)) {
+                                            // Image preview with lightbox
+                                            $content .= '<div class="relative group">';
+                                            $content .= '<img src="' . $fileUrl . '" 
                                                     alt="Proof image" 
                                                     class="proof-image-thumbnail w-full h-32 border-2 border-gray-300 dark:border-gray-600"
                                                     onclick="openLightbox(\'' . $fileUrl . '\')"
                                                     loading="lazy">';
-                                        $content .= '<div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all rounded-lg flex items-center justify-center">';
-                                        $content .= '<span class="text-white opacity-0 group-hover:opacity-100 text-sm font-semibold">🔍 Click to enlarge</span>';
-                                        $content .= '</div>';
-                                        $content .= '</div>';
-                                    } else {
-                                        // Non-image file link
-                                        $fileName = basename($filePath);
-                                        $content .= '<a href="' . $fileUrl . '" target="_blank" class="flex items-center gap-2 p-2 border rounded bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">';
-                                        $content .= '<svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>';
-                                        $content .= '<span class="text-xs text-blue-600 dark:text-blue-400 truncate">' . htmlspecialchars($fileName) . '</span>';
-                                        $content .= '</a>';
+                                            $content .= '<div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all rounded-lg flex items-center justify-center">';
+                                            $content .= '<span class="text-white opacity-0 group-hover:opacity-100 text-sm font-semibold">🔍 Click to enlarge</span>';
+                                            $content .= '</div>';
+                                            $content .= '</div>';
+                                        } else {
+                                            // Non-image file link
+                                            $fileName = basename($filePath);
+                                            $content .= '<a href="' . $fileUrl . '" target="_blank" class="flex items-center gap-2 p-2 border rounded bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">';
+                                            $content .= '<svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>';
+                                            $content .= '<span class="text-xs text-blue-600 dark:text-blue-400 truncate">' . htmlspecialchars($fileName) . '</span>';
+                                            $content .= '</a>';
+                                        }
                                     }
+
+                                    $content .= '</div></div>';
                                 }
 
-                                $content .= '</div></div>';
+                                if ($proof2['description']) {
+                                    $content .= '<div class="mb-2 mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded"><strong class="text-sm text-gray-700 dark:text-gray-300">User Description:</strong>';
+                                    $content .= '<p class="text-sm text-gray-600 dark:text-gray-400 mt-1 italic">"' . nl2br(htmlspecialchars($proof2['description'])) . '"</p></div>';
+                                }
+
+                                if ($proof2['feedback']) {
+                                    $content .= '<div class="mt-3 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded">';
+                                    $content .= '<strong class="text-sm text-red-700 dark:text-red-400">Rejection Reason:</strong>';
+                                    $content .= '<p class="text-sm text-red-600 dark:text-red-300 mt-1">' . htmlspecialchars($proof2['feedback']) . '</p>';
+                                    $content .= '</div>';
+                                }
+
+                                $content .= '</div>';
                             }
 
-                            if ($proof2['description']) {
-                                $content .= '<div class="mb-2 mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded"><strong class="text-sm text-gray-700 dark:text-gray-300">User Description:</strong>';
-                                $content .= '<p class="text-sm text-gray-600 dark:text-gray-400 mt-1 italic">"' . nl2br(htmlspecialchars($proof2['description'])) . '"</p></div>';
-                            }
-
-                            if ($proof2['feedback']) {
-                                $content .= '<div class="mt-3 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded">';
-                                $content .= '<strong class="text-sm text-red-700 dark:text-red-400">Rejection Reason:</strong>';
-                                $content .= '<p class="text-sm text-red-600 dark:text-red-300 mt-1">' . htmlspecialchars($proof2['feedback']) . '</p>';
+                            if (!$record->verification_1_status && !$record->verification_2_status) {
+                                $content .= '<div class="text-center py-8 text-gray-500">';
+                                $content .= '<svg class="w-16 h-16 mx-auto mb-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>';
+                                $content .= '<p class="text-lg font-semibold">No proofs submitted yet</p>';
                                 $content .= '</div>';
                             }
 
                             $content .= '</div>';
-                        }
 
-                        if (!$record->verification_1_status && !$record->verification_2_status) {
-                            $content .= '<div class="text-center py-8 text-gray-500">';
-                            $content .= '<svg class="w-16 h-16 mx-auto mb-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>';
-                            $content .= '<p class="text-lg font-semibold">No proofs submitted yet</p>';
-                            $content .= '</div>';
-                        }
+                            return view('filament.components.html-content', ['html' => $content]);
+                        })
+                        ->modalWidth('4xl')
+                        ->slideOver(),
 
-                        $content .= '</div>';
+                    // Quick Approve Verification 1
+                    Action::make('approve_verification_1')
+                        ->label('✓ Approve V1')
+                        ->icon('heroicon-o-check-circle')
+                        ->color('success')
+                        ->visible(
+                            fn(UserTask $record) =>
+                            $record->status === UserTask::STATUS_PENDING_VERIFICATION_1 &&
+                                $record->verification_1_status &&
+                                str_contains($record->verification_1_status, 'Submitted') &&
+                                !str_contains($record->verification_1_status, 'Approved by admin') &&
+                                !str_contains($record->verification_1_status, 'Rejected by admin')
+                        )
+                        ->requiresConfirmation()
+                        ->modalHeading('Approve Verification 1')
+                        ->modalDescription('User will be able to submit proof 2.')
+                        ->action(function (UserTask $record) {
+                            $record->update([
+                                'status' => UserTask::STATUS_PENDING_VERIFICATION_2,
+                                'verification_1_status' => $record->verification_1_status . ' - Approved by admin at ' . now()->format('Y-m-d H:i:s'),
+                                'verification_1_approved_by' => Auth::id(),
+                                'verification_1_approved_at' => now(),
+                            ]);
 
-                        return view('filament.components.html-content', ['html' => $content]);
-                    })
-                    ->modalWidth('4xl')
-                    ->slideOver(),
+                            Notification::make()
+                                ->title('Proof 1 Approved')
+                                ->body('User can now submit proof 2')
+                                ->success()
+                                ->send();
+                        }),
 
-                // Quick Approve Verification 1
-                Action::make('approve_verification_1')
-                    ->label('✓ Approve V1')
-                    ->icon('heroicon-o-check-circle')
-                    ->color('success')
-                    ->visible(
-                        fn(UserTask $record) =>
-                        $record->status === UserTask::STATUS_PENDING_VERIFICATION_1 &&
-                            $record->verification_1_status &&
-                            str_contains($record->verification_1_status, 'Submitted') &&
-                            !str_contains($record->verification_1_status, 'Approved by admin') &&
-                            !str_contains($record->verification_1_status, 'Rejected by admin')
-                    )
-                    ->requiresConfirmation()
-                    ->modalHeading('Approve Verification 1')
-                    ->modalDescription('User will be able to submit proof 2.')
-                    ->action(function (UserTask $record) {
-                        $record->update([
-                            'status' => UserTask::STATUS_PENDING_VERIFICATION_2,
-                            'verification_1_status' => $record->verification_1_status . ' - Approved by admin at ' . now()->format('Y-m-d H:i:s'),
-                            'verification_1_approved_by' => Auth::id(),
-                            'verification_1_approved_at' => now(),
-                        ]);
+                    // Quick Reject Verification 1
+                    Action::make('reject_verification_1')
+                        ->label('✗ Reject V1')
+                        ->icon('heroicon-o-x-circle')
+                        ->color('danger')
+                        ->visible(
+                            fn(UserTask $record) =>
+                            $record->status === UserTask::STATUS_PENDING_VERIFICATION_1 &&
+                                $record->verification_1_status &&
+                                str_contains($record->verification_1_status, 'Submitted') &&
+                                !str_contains($record->verification_1_status, 'Approved by admin') &&
+                                !str_contains($record->verification_1_status, 'Rejected by admin')
+                        )
+                        ->form([
+                            Textarea::make('rejection_reason')
+                                ->label('Rejection Reason')
+                                ->required()
+                                ->placeholder('Explain why this proof is rejected...')
+                                ->rows(3)
+                                ->maxLength(500),
+                        ])
+                        ->modalHeading('Reject Verification 1')
+                        ->modalDescription('Task will be marked as failed and returned to pool.')
+                        ->action(function (UserTask $record, array $data) {
+                            $record->update([
+                                'status' => UserTask::STATUS_FAILED,
+                                'verification_1_status' => 'Rejected by admin at ' . now()->format('Y-m-d H:i:s') . '. Reason: ' . $data['rejection_reason'],
+                                'failed_count' => ($record->failed_count ?? 0) + 1,
+                                'cancelled_at' => now(),
+                            ]);
 
-                        Notification::make()
-                            ->title('Proof 1 Approved')
-                            ->body('User can now submit proof 2')
-                            ->success()
-                            ->send();
-                    }),
+                            Notification::make()
+                                ->title('Proof 1 Rejected')
+                                ->body('Task marked as failed and returned to pool')
+                                ->warning()
+                                ->send();
+                        }),
 
-                // Quick Reject Verification 1
-                Action::make('reject_verification_1')
-                    ->label('✗ Reject V1')
-                    ->icon('heroicon-o-x-circle')
-                    ->color('danger')
-                    ->visible(
-                        fn(UserTask $record) =>
-                        $record->status === UserTask::STATUS_PENDING_VERIFICATION_1 &&
-                            $record->verification_1_status &&
-                            str_contains($record->verification_1_status, 'Submitted') &&
-                            !str_contains($record->verification_1_status, 'Approved by admin') &&
-                            !str_contains($record->verification_1_status, 'Rejected by admin')
-                    )
-                    ->form([
-                        Textarea::make('rejection_reason')
-                            ->label('Rejection Reason')
-                            ->required()
-                            ->placeholder('Explain why this proof is rejected...')
-                            ->rows(3)
-                            ->maxLength(500),
-                    ])
-                    ->modalHeading('Reject Verification 1')
-                    ->modalDescription('Task will be marked as failed and returned to pool.')
-                    ->action(function (UserTask $record, array $data) {
-                        $record->update([
-                            'status' => UserTask::STATUS_FAILED,
-                            'verification_1_status' => 'Rejected by admin at ' . now()->format('Y-m-d H:i:s') . '. Reason: ' . $data['rejection_reason'],
-                            'failed_count' => ($record->failed_count ?? 0) + 1,
-                            'cancelled_at' => now(),
-                        ]);
+                    // Quick Approve Verification 2 & Set Payment
+                    Action::make('approve_verification_2')
+                        ->label('✓ Approve V2 & Complete')
+                        ->icon('heroicon-o-check-badge')
+                        ->color('success')
+                        ->visible(
+                            fn(UserTask $record) =>
+                            $record->status === UserTask::STATUS_PENDING_VERIFICATION_2 &&
+                                $record->verification_2_status &&
+                                str_contains($record->verification_2_status, 'Submitted') &&
+                                !str_contains($record->verification_2_status, 'Approved by admin') &&
+                                !str_contains($record->verification_2_status, 'Rejected by admin')
+                        )
+                        ->form([
+                            \Filament\Forms\Components\Placeholder::make('user_payment_info')
+                                ->label('Informasi Pembayaran User')
+                                ->content(function (UserTask $record) {
+                                    $html = '<div class="space-y-2">';
+                                    $html .= '<div class="flex items-center gap-2"><span class="text-lg">👤</span><strong>' . htmlspecialchars($record->user->name) . '</strong></div>';
 
-                        Notification::make()
-                            ->title('Proof 1 Rejected')
-                            ->body('Task marked as failed and returned to pool')
-                            ->warning()
-                            ->send();
-                    }),
+                                    if ($record->user->ewallet_type) {
+                                        $html .= '<div class="flex items-center gap-2"><span>💳</span><span class="font-semibold text-blue-600 dark:text-blue-400">' . strtoupper($record->user->ewallet_type) . '</span></div>';
+                                        $html .= '<div class="flex items-center gap-2"><span>📱</span><span class="font-mono text-sm">' . htmlspecialchars($record->user->ewallet_number) . '</span></div>';
+                                        $html .= '<div class="flex items-center gap-2"><span>📝</span><span>A.n. <strong>' . htmlspecialchars($record->user->ewallet_name) . '</strong></span></div>';
+                                    } else {
+                                        $html .= '<div class="flex items-center gap-2 text-red-600 dark:text-red-400"><span>⚠️</span><span class="font-semibold">E-Wallet belum diisi user</span></div>';
+                                    }
 
-                // Quick Approve Verification 2 & Set Payment
-                Action::make('approve_verification_2')
-                    ->label('✓ Approve V2 & Complete')
-                    ->icon('heroicon-o-check-badge')
-                    ->color('success')
-                    ->visible(
-                        fn(UserTask $record) =>
-                        $record->status === UserTask::STATUS_PENDING_VERIFICATION_2 &&
-                            $record->verification_2_status &&
-                            str_contains($record->verification_2_status, 'Submitted') &&
-                            !str_contains($record->verification_2_status, 'Approved by admin') &&
-                            !str_contains($record->verification_2_status, 'Rejected by admin')
-                    )
-                    ->form([
-                        \Filament\Forms\Components\Placeholder::make('user_payment_info')
-                            ->label('Informasi Pembayaran User')
-                            ->content(function (UserTask $record) {
-                                $html = '<div class="space-y-2">';
-                                $html .= '<div class="flex items-center gap-2"><span class="text-lg">👤</span><strong>' . htmlspecialchars($record->user->name) . '</strong></div>';
+                                    $html .= '</div>';
+                                    return new \Illuminate\Support\HtmlString($html);
+                                })
+                                ->columnSpanFull(),
+                            \Filament\Forms\Components\Placeholder::make('estimated_info')
+                                ->label('Estimasi Nominal dari Task')
+                                ->content(fn(UserTask $record) => $record->task->estimated_amount
+                                    ? 'Rp ' . number_format($record->task->estimated_amount, 0, ',', '.')
+                                    : 'Belum diisi')
+                                ->columnSpanFull(),
+                            TextInput::make('payment_amount')
+                                ->label('Payment Amount')
+                                ->required()
+                                ->numeric()
+                                ->step(0.01)
+                                ->prefix('Rp')
+                                ->placeholder('Enter payment amount')
+                                ->default(fn(UserTask $record) => $record->task->estimated_amount ?? 0)
+                                ->live(),
+                            Textarea::make('amount_change_reason')
+                                ->label('Alasan Perubahan Nominal')
+                                ->placeholder('Isi jika nominal berbeda dari estimasi...')
+                                ->helperText('Wajib diisi jika nominal berbeda dari estimasi task')
+                                ->rows(2),
+                        ])
+                        ->modalHeading('Complete Task')
+                        ->modalDescription('Set payment amount and mark task as completed.')
+                        ->action(function (UserTask $record, array $data) {
+                            $updateData = [
+                                'status' => UserTask::STATUS_COMPLETED,
+                                'verification_2_status' => $record->verification_2_status . ' - Approved by admin at ' . now()->format('Y-m-d H:i:s'),
+                                'verification_2_approved_by' => Auth::id(),
+                                'verification_2_approved_at' => now(),
+                                'completed_at' => now(),
+                                'payment_amount' => $data['payment_amount'],
+                                'payment_status' => UserTask::PAYMENT_PENDING,
+                                'payment_verified_by_admin_id' => Auth::id(),
+                                'payment_verified_at' => now(),
+                            ];
 
-                                if ($record->user->ewallet_type) {
-                                    $html .= '<div class="flex items-center gap-2"><span>💳</span><span class="font-semibold text-blue-600 dark:text-blue-400">' . strtoupper($record->user->ewallet_type) . '</span></div>';
-                                    $html .= '<div class="flex items-center gap-2"><span>📱</span><span class="font-mono text-sm">' . htmlspecialchars($record->user->ewallet_number) . '</span></div>';
-                                    $html .= '<div class="flex items-center gap-2"><span>📝</span><span>A.n. <strong>' . htmlspecialchars($record->user->ewallet_name) . '</strong></span></div>';
-                                } else {
-                                    $html .= '<div class="flex items-center gap-2 text-red-600 dark:text-red-400"><span>⚠️</span><span class="font-semibold">E-Wallet belum diisi user</span></div>';
-                                }
+                            // Simpan alasan perubahan jika ada
+                            if (!empty($data['amount_change_reason'])) {
+                                $updateData['amount_change_reason'] = $data['amount_change_reason'];
+                            }
 
-                                $html .= '</div>';
-                                return new \Illuminate\Support\HtmlString($html);
-                            })
-                            ->columnSpanFull(),
-                        \Filament\Forms\Components\Placeholder::make('estimated_info')
-                            ->label('Estimasi Nominal dari Task')
-                            ->content(fn(UserTask $record) => $record->task->estimated_amount
-                                ? 'Rp ' . number_format($record->task->estimated_amount, 0, ',', '.')
-                                : 'Belum diisi')
-                            ->columnSpanFull(),
-                        TextInput::make('payment_amount')
-                            ->label('Payment Amount')
-                            ->required()
-                            ->numeric()
-                            ->step(0.01)
-                            ->prefix('Rp')
-                            ->placeholder('Enter payment amount')
-                            ->default(fn(UserTask $record) => $record->task->estimated_amount ?? 0)
-                            ->live(),
-                        Textarea::make('amount_change_reason')
-                            ->label('Alasan Perubahan Nominal')
-                            ->placeholder('Isi jika nominal berbeda dari estimasi...')
-                            ->helperText('Wajib diisi jika nominal berbeda dari estimasi task')
-                            ->rows(2),
-                    ])
-                    ->modalHeading('Complete Task')
-                    ->modalDescription('Set payment amount and mark task as completed.')
-                    ->action(function (UserTask $record, array $data) {
-                        $updateData = [
-                            'status' => UserTask::STATUS_COMPLETED,
-                            'verification_2_status' => $record->verification_2_status . ' - Approved by admin at ' . now()->format('Y-m-d H:i:s'),
-                            'verification_2_approved_by' => Auth::id(),
-                            'verification_2_approved_at' => now(),
-                            'completed_at' => now(),
-                            'payment_amount' => $data['payment_amount'],
-                            'payment_status' => UserTask::PAYMENT_PENDING,
-                            'payment_verified_by_admin_id' => Auth::id(),
-                            'payment_verified_at' => now(),
-                        ];
+                            $record->update($updateData);
 
-                        // Simpan alasan perubahan jika ada
-                        if (!empty($data['amount_change_reason'])) {
-                            $updateData['amount_change_reason'] = $data['amount_change_reason'];
-                        }
+                            Notification::make()
+                                ->title('Task Completed')
+                                ->body('Payment amount: Rp ' . number_format($data['payment_amount'], 0, ',', '.'))
+                                ->success()
+                                ->send();
+                        }),
 
-                        $record->update($updateData);
+                    // Quick Reject Verification 2
+                    Action::make('reject_verification_2')
+                        ->label('✗ Reject V2')
+                        ->icon('heroicon-o-x-circle')
+                        ->color('danger')
+                        ->visible(
+                            fn(UserTask $record) =>
+                            $record->status === UserTask::STATUS_PENDING_VERIFICATION_2 &&
+                                $record->verification_2_status &&
+                                str_contains($record->verification_2_status, 'Submitted') &&
+                                !str_contains($record->verification_2_status, 'Approved by admin') &&
+                                !str_contains($record->verification_2_status, 'Rejected by admin')
+                        )
+                        ->form([
+                            Textarea::make('rejection_reason')
+                                ->label('Rejection Reason')
+                                ->required()
+                                ->placeholder('Explain why this proof is rejected...')
+                                ->rows(3)
+                                ->maxLength(500),
+                        ])
+                        ->modalHeading('Reject Verification 2')
+                        ->modalDescription('Task will be marked as failed and returned to pool.')
+                        ->action(function (UserTask $record, array $data) {
+                            $record->update([
+                                'status' => UserTask::STATUS_FAILED,
+                                'verification_2_status' => 'Rejected by admin at ' . now()->format('Y-m-d H:i:s') . '. Reason: ' . $data['rejection_reason'],
+                                'failed_count' => ($record->failed_count ?? 0) + 1,
+                                'cancelled_at' => now(),
+                            ]);
 
-                        Notification::make()
-                            ->title('Task Completed')
-                            ->body('Payment amount: Rp ' . number_format($data['payment_amount'], 0, ',', '.'))
-                            ->success()
-                            ->send();
-                    }),
+                            Notification::make()
+                                ->title('Proof 2 Rejected')
+                                ->body('Task marked as failed and returned to pool')
+                                ->warning()
+                                ->send();
+                        }),
 
-                // Quick Reject Verification 2
-                Action::make('reject_verification_2')
-                    ->label('✗ Reject V2')
-                    ->icon('heroicon-o-x-circle')
-                    ->color('danger')
-                    ->visible(
-                        fn(UserTask $record) =>
-                        $record->status === UserTask::STATUS_PENDING_VERIFICATION_2 &&
-                            $record->verification_2_status &&
-                            str_contains($record->verification_2_status, 'Submitted') &&
-                            !str_contains($record->verification_2_status, 'Approved by admin') &&
-                            !str_contains($record->verification_2_status, 'Rejected by admin')
-                    )
-                    ->form([
-                        Textarea::make('rejection_reason')
-                            ->label('Rejection Reason')
-                            ->required()
-                            ->placeholder('Explain why this proof is rejected...')
-                            ->rows(3)
-                            ->maxLength(500),
-                    ])
-                    ->modalHeading('Reject Verification 2')
-                    ->modalDescription('Task will be marked as failed and returned to pool.')
-                    ->action(function (UserTask $record, array $data) {
-                        $record->update([
-                            'status' => UserTask::STATUS_FAILED,
-                            'verification_2_status' => 'Rejected by admin at ' . now()->format('Y-m-d H:i:s') . '. Reason: ' . $data['rejection_reason'],
-                            'failed_count' => ($record->failed_count ?? 0) + 1,
-                            'cancelled_at' => now(),
-                        ]);
+                    // Quick Payment Success
+                    Action::make('mark_payment_success')
+                        ->label('💰 Mark Paid')
+                        ->icon('heroicon-o-banknotes')
+                        ->color('success')
+                        ->visible(
+                            fn(UserTask $record) =>
+                            $record->payment_status === UserTask::PAYMENT_PENDING &&
+                                $record->status === UserTask::STATUS_COMPLETED
+                        )
+                        ->form([
+                            \Filament\Forms\Components\Placeholder::make('user_payment_info')
+                                ->label('Informasi Pembayaran User')
+                                ->content(function (UserTask $record) {
+                                    $html = '<div class="space-y-2">';
+                                    $html .= '<div class="flex items-center gap-2"><span class="text-lg">👤</span><strong>' . htmlspecialchars($record->user->name) . '</strong></div>';
 
-                        Notification::make()
-                            ->title('Proof 2 Rejected')
-                            ->body('Task marked as failed and returned to pool')
-                            ->warning()
-                            ->send();
-                    }),
+                                    if ($record->user->ewallet_type) {
+                                        $html .= '<div class="flex items-center gap-2"><span>💳</span><span class="font-semibold text-blue-600 dark:text-blue-400">' . strtoupper($record->user->ewallet_type) . '</span></div>';
+                                        $html .= '<div class="flex items-center gap-2"><span>📱</span><span class="font-mono text-sm">' . htmlspecialchars($record->user->ewallet_number) . '</span></div>';
+                                        $html .= '<div class="flex items-center gap-2"><span>📝</span><span>A.n. <strong>' . htmlspecialchars($record->user->ewallet_name) . '</strong></span></div>';
+                                    } else {
+                                        $html .= '<div class="flex items-center gap-2 text-red-600 dark:text-red-400"><span>⚠️</span><span class="font-semibold">E-Wallet belum diisi user</span></div>';
+                                    }
 
-                // Quick Payment Success
-                Action::make('mark_payment_success')
-                    ->label('💰 Mark Paid')
-                    ->icon('heroicon-o-banknotes')
-                    ->color('success')
-                    ->visible(
-                        fn(UserTask $record) =>
-                        $record->payment_status === UserTask::PAYMENT_PENDING &&
-                            $record->status === UserTask::STATUS_COMPLETED
-                    )
-                    ->form([
-                        \Filament\Forms\Components\Placeholder::make('user_payment_info')
-                            ->label('Informasi Pembayaran User')
-                            ->content(function (UserTask $record) {
-                                $html = '<div class="space-y-2">';
-                                $html .= '<div class="flex items-center gap-2"><span class="text-lg">👤</span><strong>' . htmlspecialchars($record->user->name) . '</strong></div>';
+                                    $html .= '</div>';
+                                    return new \Illuminate\Support\HtmlString($html);
+                                })
+                                ->columnSpanFull(),
+                            \Filament\Forms\Components\Placeholder::make('estimated_info')
+                                ->label('Estimasi Nominal dari Task')
+                                ->content(fn(UserTask $record) => $record->task->estimated_amount
+                                    ? 'Rp ' . number_format($record->task->estimated_amount, 0, ',', '.')
+                                    : 'Belum diisi')
+                                ->columnSpanFull(),
+                            TextInput::make('payment_amount')
+                                ->label('Payment Amount')
+                                ->required()
+                                ->numeric()
+                                ->step(0.01)
+                                ->prefix('Rp')
+                                ->default(fn(UserTask $record) => $record->payment_amount ?? $record->task->estimated_amount ?? 0)
+                                ->helperText('Anda bisa mengubah nominal jika diperlukan'),
+                            Textarea::make('amount_change_reason')
+                                ->label('Alasan Perubahan Nominal')
+                                ->placeholder('Isi jika nominal diubah dari sebelumnya...')
+                                ->helperText('Wajib diisi jika nominal berbeda')
+                                ->rows(2)
+                                ->default(fn(UserTask $record) => $record->amount_change_reason),
+                        ])
+                        ->modalHeading('Mark Payment as Success')
+                        ->action(function (UserTask $record, array $data) {
+                            $updateData = [
+                                'payment_status' => UserTask::PAYMENT_SUCCESS,
+                                'payment_amount' => $data['payment_amount'],
+                                'payment_verified_by_admin_id' => Auth::id(),
+                                'payment_verified_at' => now(),
+                            ];
 
-                                if ($record->user->ewallet_type) {
-                                    $html .= '<div class="flex items-center gap-2"><span>💳</span><span class="font-semibold text-blue-600 dark:text-blue-400">' . strtoupper($record->user->ewallet_type) . '</span></div>';
-                                    $html .= '<div class="flex items-center gap-2"><span>📱</span><span class="font-mono text-sm">' . htmlspecialchars($record->user->ewallet_number) . '</span></div>';
-                                    $html .= '<div class="flex items-center gap-2"><span>📝</span><span>A.n. <strong>' . htmlspecialchars($record->user->ewallet_name) . '</strong></span></div>';
-                                } else {
-                                    $html .= '<div class="flex items-center gap-2 text-red-600 dark:text-red-400"><span>⚠️</span><span class="font-semibold">E-Wallet belum diisi user</span></div>';
-                                }
+                            // Simpan/update alasan perubahan jika ada
+                            if (!empty($data['amount_change_reason'])) {
+                                $updateData['amount_change_reason'] = $data['amount_change_reason'];
+                            }
 
-                                $html .= '</div>';
-                                return new \Illuminate\Support\HtmlString($html);
-                            })
-                            ->columnSpanFull(),
-                        \Filament\Forms\Components\Placeholder::make('estimated_info')
-                            ->label('Estimasi Nominal dari Task')
-                            ->content(fn(UserTask $record) => $record->task->estimated_amount
-                                ? 'Rp ' . number_format($record->task->estimated_amount, 0, ',', '.')
-                                : 'Belum diisi')
-                            ->columnSpanFull(),
-                        TextInput::make('payment_amount')
-                            ->label('Payment Amount')
-                            ->required()
-                            ->numeric()
-                            ->step(0.01)
-                            ->prefix('Rp')
-                            ->default(fn(UserTask $record) => $record->payment_amount ?? $record->task->estimated_amount ?? 0)
-                            ->helperText('Anda bisa mengubah nominal jika diperlukan'),
-                        Textarea::make('amount_change_reason')
-                            ->label('Alasan Perubahan Nominal')
-                            ->placeholder('Isi jika nominal diubah dari sebelumnya...')
-                            ->helperText('Wajib diisi jika nominal berbeda')
-                            ->rows(2)
-                            ->default(fn(UserTask $record) => $record->amount_change_reason),
-                    ])
-                    ->modalHeading('Mark Payment as Success')
-                    ->action(function (UserTask $record, array $data) {
-                        $updateData = [
-                            'payment_status' => UserTask::PAYMENT_SUCCESS,
-                            'payment_amount' => $data['payment_amount'],
-                            'payment_verified_by_admin_id' => Auth::id(),
-                            'payment_verified_at' => now(),
-                        ];
+                            $record->update($updateData);
 
-                        // Simpan/update alasan perubahan jika ada
-                        if (!empty($data['amount_change_reason'])) {
-                            $updateData['amount_change_reason'] = $data['amount_change_reason'];
-                        }
-
-                        $record->update($updateData);
-
-                        Notification::make()
-                            ->title('Payment Confirmed')
-                            ->body('Paid: Rp ' . number_format($data['payment_amount'], 0, ',', '.'))
-                            ->success()
-                            ->send();
-                    }),
+                            Notification::make()
+                                ->title('Payment Confirmed')
+                                ->body('Paid: Rp ' . number_format($data['payment_amount'], 0, ',', '.'))
+                                ->success()
+                                ->send();
+                        }),
 
                     // Download Proofs for single record
                     Action::make('download_proofs_single')
@@ -872,19 +872,19 @@ class UserTaskResource extends Resource
                             $zipFileName = 'proofs_' . $record->user->name . '_Task' . $record->task_id . '_' . now()->format('Ymd_His') . '.zip';
                             $zipFileName = preg_replace('/[^a-zA-Z0-9_.-]/', '_', $zipFileName);
                             $zipPath = storage_path('app/temp/' . $zipFileName);
-                            
+
                             if (!file_exists(storage_path('app/temp'))) {
                                 mkdir(storage_path('app/temp'), 0755, true);
                             }
-                            
+
                             $zip = new \ZipArchive();
                             if ($zip->open($zipPath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) !== true) {
                                 Notification::make()->title('Error')->body('Cannot create ZIP')->danger()->send();
                                 return;
                             }
-                            
+
                             $fileCount = 0;
-                            
+
                             // Proof 1
                             if ($record->verification_1_files) {
                                 $files = is_array($record->verification_1_files) ? $record->verification_1_files : json_decode($record->verification_1_files, true) ?? [];
@@ -896,7 +896,7 @@ class UserTaskResource extends Resource
                                     }
                                 }
                             }
-                            
+
                             // Proof 2
                             if ($record->verification_2_files) {
                                 $files = is_array($record->verification_2_files) ? $record->verification_2_files : json_decode($record->verification_2_files, true) ?? [];
@@ -908,15 +908,15 @@ class UserTaskResource extends Resource
                                     }
                                 }
                             }
-                            
+
                             $zip->close();
-                            
+
                             if ($fileCount === 0) {
                                 @unlink($zipPath);
                                 Notification::make()->title('No Files')->body('No proof files found')->warning()->send();
                                 return;
                             }
-                            
+
                             return response()->download($zipPath, $zipFileName)->deleteFileAfterSend(true);
                         }),
 
@@ -925,10 +925,10 @@ class UserTaskResource extends Resource
                     EditAction::make()
                         ->label('Edit'),
                 ])
-                ->label('Actions')
-                ->icon('heroicon-m-ellipsis-vertical')
-                ->color('gray')
-                ->button(),
+                    ->label('Actions')
+                    ->icon('heroicon-m-ellipsis-vertical')
+                    ->color('gray')
+                    ->button(),
             ])
             ->bulkActions([
                 BulkActionGroup::make([
@@ -943,12 +943,12 @@ class UserTaskResource extends Resource
                         ->action(function (Collection $records) {
                             $zipFileName = 'proofs_' . now()->format('Y-m-d_His') . '.zip';
                             $zipPath = storage_path('app/temp/' . $zipFileName);
-                            
+
                             // Ensure temp directory exists
                             if (!file_exists(storage_path('app/temp'))) {
                                 mkdir(storage_path('app/temp'), 0755, true);
                             }
-                            
+
                             $zip = new \ZipArchive();
                             if ($zip->open($zipPath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) !== true) {
                                 Notification::make()
@@ -958,20 +958,20 @@ class UserTaskResource extends Resource
                                     ->send();
                                 return;
                             }
-                            
+
                             $fileCount = 0;
-                            
+
                             foreach ($records as $record) {
                                 $userName = preg_replace('/[^a-zA-Z0-9_-]/', '_', $record->user->name ?? 'unknown');
                                 $taskId = $record->task_id;
                                 $recordId = $record->id;
-                                
+
                                 // Process Proof 1 files
                                 if ($record->verification_1_files) {
-                                    $files = is_array($record->verification_1_files) 
-                                        ? $record->verification_1_files 
+                                    $files = is_array($record->verification_1_files)
+                                        ? $record->verification_1_files
                                         : json_decode($record->verification_1_files, true) ?? [];
-                                    
+
                                     foreach ($files as $index => $file) {
                                         $filePath = Storage::disk('public')->path($file);
                                         if (file_exists($filePath)) {
@@ -982,13 +982,13 @@ class UserTaskResource extends Resource
                                         }
                                     }
                                 }
-                                
+
                                 // Process Proof 2 files
                                 if ($record->verification_2_files) {
-                                    $files = is_array($record->verification_2_files) 
-                                        ? $record->verification_2_files 
+                                    $files = is_array($record->verification_2_files)
+                                        ? $record->verification_2_files
                                         : json_decode($record->verification_2_files, true) ?? [];
-                                    
+
                                     foreach ($files as $index => $file) {
                                         $filePath = Storage::disk('public')->path($file);
                                         if (file_exists($filePath)) {
@@ -1000,9 +1000,9 @@ class UserTaskResource extends Resource
                                     }
                                 }
                             }
-                            
+
                             $zip->close();
-                            
+
                             if ($fileCount === 0) {
                                 @unlink($zipPath);
                                 Notification::make()
@@ -1012,13 +1012,13 @@ class UserTaskResource extends Resource
                                     ->send();
                                 return;
                             }
-                            
+
                             Notification::make()
                                 ->title('ZIP Created')
                                 ->body("{$fileCount} files packaged. Download will start...")
                                 ->success()
                                 ->send();
-                            
+
                             return response()->download($zipPath, $zipFileName)->deleteFileAfterSend(true);
                         }),
 

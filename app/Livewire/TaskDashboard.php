@@ -18,12 +18,6 @@ class TaskDashboard extends Component
     public $search = '';
     public $filter = 'available'; // available, my_tasks, completed, failed
     public $viewMode = 'categories'; // categories, tasks
-    
-    // Weekly task warning modal properties
-    public $showWeeklyWarningModal = false;
-    public $pendingTaskId = null;
-    public $lastTaskDate = null;
-    public $daysSinceLastTask = null;
 
     public function mount()
     {
@@ -90,36 +84,8 @@ class TaskDashboard extends Component
         $this->search = '';
         $this->resetPage();
     }
-    
-    /**
-     * Confirm taking task after user acknowledges weekly warning
-     */
-    public function confirmTakeTask()
-    {
-        if ($this->pendingTaskId) {
-            $this->showWeeklyWarningModal = false;
-            $taskId = $this->pendingTaskId;
-            $this->pendingTaskId = null;
-            $this->lastTaskDate = null;
-            $this->daysSinceLastTask = null;
-            
-            // Call takeTask with confirmed = true to bypass the warning
-            return $this->takeTask($taskId, true);
-        }
-    }
-    
-    /**
-     * Cancel taking task from warning modal
-     */
-    public function cancelTakeTask()
-    {
-        $this->showWeeklyWarningModal = false;
-        $this->pendingTaskId = null;
-        $this->lastTaskDate = null;
-        $this->daysSinceLastTask = null;
-    }
 
-    public function takeTask($taskId, $confirmed = false)
+    public function takeTask($taskId)
     {
         $user = Auth::user();
 
@@ -127,29 +93,6 @@ class TaskDashboard extends Component
         if (!$user->canTakeTask()) {
             session()->flash('error', $user->getCannotTakeTaskReason() ?? 'Anda tidak diperbolehkan mengambil task.');
             return;
-        }
-        
-        // Check if user has completed a task in the last 7 days (WhatsApp spam protection)
-        // Only show warning if not already confirmed
-        if (!$confirmed) {
-            $lastCompletedTask = UserTask::where('user_id', Auth::id())
-                ->whereIn('status', [
-                    UserTask::STATUS_COMPLETED,
-                    UserTask::STATUS_PENDING_VERIFICATION_1,
-                    UserTask::STATUS_PENDING_VERIFICATION_2,
-                ])
-                ->orderBy('taken_at', 'desc')
-                ->first();
-            
-            if ($lastCompletedTask && $lastCompletedTask->taken_at->diffInDays(now()) < 7) {
-                // Show warning modal
-                $this->pendingTaskId = $taskId;
-                $this->lastTaskDate = $lastCompletedTask->taken_at->format('d M Y, H:i');
-                // Use diffForHumans for readable format
-                $this->daysSinceLastTask = $lastCompletedTask->taken_at->diffForHumans();
-                $this->showWeeklyWarningModal = true;
-                return;
-            }
         }
 
         // Check if user already has an active task in "taken" status
@@ -181,10 +124,10 @@ class TaskDashboard extends Component
             if (in_array($existingUserTask->status, [UserTask::STATUS_CANCELLED, UserTask::STATUS_FAILED])) {
                 // Delete old proof files from storage before resetting
                 $this->deleteOldProofFiles($existingUserTask);
-                
+
                 // Clear session understanding state for fresh start
                 session()->forget('task_understood_' . $taskId);
-                
+
                 $existingUserTask->update([
                     'status' => UserTask::STATUS_TAKEN,
                     'taken_at' => now(),
@@ -382,7 +325,7 @@ class TaskDashboard extends Component
                 }
             }
         }
-        
+
         // Delete verification 2 files
         if (!empty($userTask->verification_2_files)) {
             foreach ($userTask->verification_2_files as $file) {

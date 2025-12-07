@@ -62,7 +62,7 @@ class OptimizeApp extends Command
 
         $this->newLine();
         $this->info('✅ Application optimized successfully!');
-        
+
         return Command::SUCCESS;
     }
 

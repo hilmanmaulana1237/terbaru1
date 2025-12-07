@@ -100,7 +100,7 @@ class TaskWorkWizard extends Component
         if (in_array($this->userTask->status, [UserTask::STATUS_CANCELLED, UserTask::STATUS_FAILED])) {
             // Clear the understanding session for this task
             session()->forget('task_understood_' . $this->task->id);
-            
+
             session()->flash('error', 'Task ini sudah dibatalkan atau gagal. Silakan ambil task baru dari halaman dashboard.');
             return redirect()->route('user.dashboard');
         }
@@ -460,7 +460,7 @@ class TaskWorkWizard extends Component
             if ($updated) {
                 // Clear the understanding session for this task
                 session()->forget('task_understood_' . $this->task->id);
-                
+
                 session()->flash('success', 'Task cancelled successfully and released to pool.');
                 $this->dispatch('redirect-to-dashboard');
             } else {

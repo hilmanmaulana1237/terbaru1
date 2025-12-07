@@ -7,6 +7,7 @@ use App\Http\Middleware\CacheStaticAssets;
 use App\Http\Middleware\CompressResponse;
 use App\Http\Middleware\EnsureUserNotBanned;
 use App\Http\Middleware\EnsureUserCanTakeTask;
+use App\Http\Middleware\TrustProxies;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -15,7 +16,9 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
+        // Trust proxies for HTTPS/Cloudflare
         $middleware->web(prepend: [
+            TrustProxies::class,
             CacheStaticAssets::class,
         ]);
 
